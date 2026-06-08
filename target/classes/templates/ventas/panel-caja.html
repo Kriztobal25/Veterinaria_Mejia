@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head th:replace="~{fragments/head :: head('Punto de Venta / Caja')}"></head>
+
+<body>
+
+    <div th:replace="~{fragments/sidebar :: menuLateral}"></div>
+
+    <div class="main-content">
+        
+        <header th:replace="~{fragments/navbar :: topbar}"></header>
+
+        <main class="content">
+            
+            <style>
+                .resultados-busqueda { 
+                    max-height: 480px; 
+                    overflow-y: auto; 
+                    border: 1px solid #e2e8f0; 
+                    border-radius: 8px; 
+                    background: #fff; 
+                }
+                .item-resultado { 
+                    padding: 14px 16px; 
+                    border-bottom: 1px solid #f1f5f9; 
+                    cursor: pointer; 
+                    display: flex; 
+                    justify-content: space-between; 
+                    align-items: center;
+                    transition: background-color 0.2s;
+                }
+                .item-resultado:hover { 
+                    background-color: #f0fdf4; 
+                }
+                .table-carrito th {
+                    text-transform: uppercase;
+                    font-size: 0.75rem;
+                    border-bottom: 2px solid #edf2f7;
+                }
+                .badge-tipo {
+                    font-size: 0.7rem;
+                    padding: 4px 8px;
+                    border-radius: 6px;
+                }
+                .resultados-busqueda::-webkit-scrollbar { width: 6px; }
+                .resultados-busqueda::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+            </style>
+
+            <div th:if="${errorMsg}" class="alert alert-danger alert-dismissible fade show mb-4 border-0 shadow-sm" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMsg}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1"><i class="bi bi-display text-primary me-2"></i>Terminal de Punto de Venta</h2>
+                    <p class="text-muted mb-0">Gestión de boletas, tickets y salidas de inventario en tiempo real.</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 shadow-sm fs-6">
+                        <i class="bi bi-unlock-fill me-1"></i> Caja Abierta
+                    </span>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                
+                <div class="col-lg-6">
+                    <div class="card card-custom p-4 h-100">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="p-2 rounded-3 me-3 text-primary bg-opacity-10 bg-primary">
+                                <i class="bi bi-funnel-fill fs-4"></i>
+                            </div>
+                            <h5 class="fw-bold m-0 text-secondary">Filtros de Catálogo</h5>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label text-muted small fw-semibold">Filtrar por Especie</label>
+                                <select id="filtro-especie" onchange="aplicarFiltros()" class="form-select border-light-subtle shadow-sm">
+                                    <option value="">Todas las especies</option>
+                                    <option th:each="e : ${especies}" th:value="${e.nombreEspecie}" th:text="${e.nombreEspecie}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label text-muted small fw-semibold">Filtrar por Categoría</label>
+                                <select id="filtro-categoria" onchange="aplicarFiltros()" class="form-select border-light-subtle shadow-sm">
+                                    <option value="">Todas las categorías</option>
+                                    <option th:each="cat : ${categorias}" th:value="${cat.nombre}" th:text="${cat.nombre}"></option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group mb-3 shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" id="busqueda-nombre" onkeyup="aplicarFiltros()" class="form-control border-start-0 ps-0" placeholder="Buscar por nombre..." />
+                        </div>
+                        
+                        <div class="resultados-busqueda" id="contenedor-productos">
+                            
+                            <div class="item-resultado" th:each="p : ${productos}" 
+                                 th:if="${p.estado}"
+                                 th:data-id="${p.id}" th:data-nombre="${p.nombre}" th:data-precio="${p.precioVentaActual}" 
+                                 th:data-stock="${p.stockTotal}" th:data-categoria="${p.categoria.nombre}" 
+                                 th:data-especie="${p.especie != null ? p.especie.nombreEspecie : 'General'}"
+                                 onclick="agregarAlCarrito(this, 'producto')">
+                                <div>
+                                    <div class="fw-bold text-dark mb-1" th:text="${p.nombre}"></div>
+                                    <div class="text-muted small">
+                                        <span class="badge bg-light text-dark border badge-tipo me-1">P</span>
+                                        Stock: <span th:text="${p.stockTotal}"></span> u.
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="fw-bold text-success">S/. <span th:text="${#numbers.formatDecimal(p.precioVentaActual, 1, 'COMMA', 2, 'POINT')}"></span></span>
+                                </div>
+                            </div>
+                            
+                            <div class="item-resultado" th:each="s : ${servicios}" 
+                                 th:data-id="${s.id}" th:data-nombre="${s.nombreServicio}" th:data-precio="${s.precioServicio}" 
+                                 th:data-stock="9999" th:data-categoria="Servicio" th:data-especie="General"
+                                 onclick="agregarAlCarrito(this, 'servicio')">
+                                <div>
+                                    <div class="fw-bold text-dark mb-1" th:text="${s.nombreServicio}"></div>
+                                    <div class="text-muted small">
+                                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 badge-tipo me-1">S</span>
+                                        Servicio Clínico
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="fw-bold text-primary">S/. <span th:text="${#numbers.formatDecimal(s.precioServicio, 1, 'COMMA', 2, 'POINT')}"></span></span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card card-custom p-4 h-100 border-top border-4 border-success">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="p-2 rounded-3 me-3 text-success bg-opacity-10 bg-success">
+                                <i class="bi bi-cart-fill fs-4"></i>
+                            </div>
+                            <h5 class="fw-bold m-0 text-secondary">Comprobante Actual</h5>
+                        </div>
+
+                        <form th:action="@{/ventas/procesar}" th:object="${venta}" method="POST" id="form-venta" onsubmit="return validarCarritoAntesDeCobrar()">
+                            <input type="hidden" th:field="*{totalVenta}" id="input-total-final" value="0.00" />
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-semibold">ID o DNI Cliente (Opcional)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-person-fill"></i></span>
+                                        <input type="text" th:field="*{cliente.id}" class="form-control" placeholder="Dejar en blanco para Público General" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-semibold">Método de Pago</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-wallet2"></i></span>
+                                        <select th:field="*{tipoPago}" class="form-select" required>
+                                            <option value="Efectivo">Efectivo</option>
+                                            <option value="Yape">Yape</option>
+                                            <option value="Plin">Plin</option>
+                                            <option value="Tarjeta">Tarjeta</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="table-responsive" style="min-height: 250px;">
+                                <table class="table table-carrito align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 45%;" class="text-secondary">Descripción</th>
+                                            <th style="width: 20%;" class="text-secondary text-center">Cant.</th>
+                                            <th style="width: 15%;" class="text-secondary text-end">P. Unit</th>
+                                            <th style="width: 15%;" class="text-secondary text-end">Subt.</th>
+                                            <th style="width: 5%;" class="text-center"><i class="bi bi-trash"></i></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cuerpo-carrito"></tbody>
+                                </table>
+                            </div>
+                            
+                            <hr class="text-muted my-4">
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded-3 border">
+                                <span class="text-secondary fw-bold fs-5">TOTAL A COBRAR:</span>
+                                <h1 class="fw-bold text-success m-0">S/. <span id="label-total-visual">0.00</span></h1>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success w-100 py-3 fs-5 fw-bold shadow-sm">
+                                <i class="bi bi-check-circle-fill me-2"></i> Procesar Transacción e Imprimir
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let indice = 0;
+
+        // FILTRO DE BÚSQUEDA
+        function aplicarFiltros() {
+            const esp = document.getElementById("filtro-especie").value.toLowerCase();
+            const cat = document.getElementById("filtro-categoria").value.toLowerCase();
+            const nom = document.getElementById("busqueda-nombre").value.toLowerCase();
+            
+            document.querySelectorAll(".item-resultado").forEach(item => {
+                const iEsp = item.getAttribute("data-especie").toLowerCase();
+                const iCat = item.getAttribute("data-categoria").toLowerCase();
+                const iNom = item.getAttribute("data-nombre").toLowerCase();
+                
+                const coincideEspecie = (esp === "" || iEsp.includes(esp) || iCat === "servicio");
+                const coincideCategoria = (cat === "" || iCat.includes(cat));
+                const coincideNombre = (nom === "" || iNom.includes(nom));
+
+                if (coincideEspecie && coincideCategoria && coincideNombre) {
+                    item.style.setProperty("display", "flex", "important");
+                } else {
+                    item.style.setProperty("display", "none", "important");
+                }
+            });
+        }
+
+        // AGREGAR AL CARRITO
+        function agregarAlCarrito(el, tipo) {
+            const id = el.getAttribute("data-id");
+            const nombre = el.getAttribute("data-nombre");
+            const precio = parseFloat(el.getAttribute("data-precio"));
+            const stock = parseInt(el.getAttribute("data-stock"));
+            const tbody = document.getElementById("cuerpo-carrito");
+            
+            let duplicado = false;
+            
+            // Verificar si ya existe en el carrito
+            document.querySelectorAll("#cuerpo-carrito tr").forEach(tr => {
+                const hiddenId = tr.querySelector(`input[type='hidden'][name*='.${tipo}.id']`);
+                if (hiddenId && hiddenId.value === id) {
+                    const inputCant = tr.querySelector("input[type='number']");
+                    const cantidadActual = parseInt(inputCant.value);
+                    
+                    if (cantidadActual < stock) {
+                        inputCant.value = cantidadActual + 1;
+                    } else if (tipo === 'producto') {
+                        alert("Has alcanzado el límite de stock de este producto.");
+                    }
+                    duplicado = true;
+                }
+            });
+            
+            if (duplicado) { 
+                recalcular(); 
+                return; 
+            }
+            
+            // Crear nueva fila
+            const tr = document.createElement("tr");
+            const inputNombre = tipo === 'producto' ? `detallesVentas[${indice}].producto.id` : `detallesVentas[${indice}].servicio.id`;
+            const labelTipo = tipo === 'producto' ? '<span class="badge bg-light text-dark border me-1">P</span>' : '<span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 me-1">S</span>';
+            
+            tr.innerHTML = `
+                <td>
+                    <div class="fw-bold text-dark small d-flex align-items-center">
+                        ${labelTipo} <span>${nombre}</span>
+                    </div>
+                    <input type="hidden" name="${inputNombre}" value="${id}">
+                </td>
+                <td>
+                    <input type="number" name="detallesVentas[${indice}].cantidad" value="1" min="1" max="${stock}" onchange="recalcular()" class="form-control form-control-sm text-center fw-bold">
+                </td>
+                <td class="text-end text-muted small pe-3">S/. ${precio.toFixed(2)}
+                    <input type="hidden" name="detallesVentas[${indice}].precioUnitario" value="${precio}">
+                </td>
+                <td class="text-end fw-bold text-dark subtotal small pe-2">S/. ${precio.toFixed(2)}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1" onclick="this.closest('tr').remove(); recalcular()">
+                        <i class="bi bi-trash3-fill"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            indice++;
+            recalcular();
+        }
+
+        // CÁLCULO EN TIEMPO REAL
+        function recalcular() {
+            let total = 0;
+            document.querySelectorAll("#cuerpo-carrito tr").forEach(tr => {
+                const cant = parseInt(tr.querySelector("input[type='number']").value) || 0;
+                const prec = parseFloat(tr.querySelector("input[name*='precioUnitario']").value);
+                const sub = cant * prec;
+                
+                tr.querySelector(".subtotal").innerText = "S/. " + sub.toFixed(2);
+                total += sub;
+            });
+            document.getElementById("label-total-visual").innerText = total.toFixed(2);
+            document.getElementById("input-total-final").value = total.toFixed(2);
+        }
+
+        // VALIDACIÓN ANTES DE ENVIAR
+        function validarCarritoAntesDeCobrar() {
+            const filas = document.querySelectorAll("#cuerpo-carrito tr").length;
+            if (filas === 0) {
+                alert("No puedes procesar una venta vacía. Agrega productos o servicios al comprobante primero.");
+                return false; // Detiene el envío del formulario
+            }
+            return true; // Permite el envío
+        }
+    </script>
+</body>
+</html>
