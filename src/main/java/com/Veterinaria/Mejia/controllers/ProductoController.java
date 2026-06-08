@@ -128,21 +128,11 @@ public class ProductoController {
             RedirectAttributes redirectAttrs) {
 
         try {
-            Producto prod = productoRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Producto no encontrado."));
-            
-            // Validar que haya stock suficiente para desechar
-            if (prod.getStockTotal().compareTo(cantidad) < 0) {
-                throw new RuntimeException("Error: No puedes desechar más stock del que tienes actualmente.");
-            }
-
-            // Restamos la cantidad desechada
-            prod.setStockTotal(prod.getStockTotal().subtract(cantidad));
-            productoRepository.save(prod);
-
-            // Registrar la pérdida económica (cantidad * precioInversion) a las PÉRDIDAS
+            // ¡AQUÍ ESTÁ LA MAGIA! Llamamos a tu servicio que guarda en la tabla Mermas
+            productoService.reportarMermaDesecho(id, cantidad);
 
             redirectAttrs.addFlashAttribute("successMsg", "Se ha registrado la pérdida y descontado del stock correctamente.");
+            
         } catch (Exception e) {
             redirectAttrs.addFlashAttribute("errorMsg", e.getMessage());
         }
