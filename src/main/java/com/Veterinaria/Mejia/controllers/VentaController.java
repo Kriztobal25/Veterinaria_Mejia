@@ -1,10 +1,10 @@
 package com.Veterinaria.Mejia.controllers;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.Veterinaria.Mejia.dto.ItemCarritoDTO;
+import com.Veterinaria.Mejia.dto.VentaRequestDTO;
 import com.Veterinaria.Mejia.models.Venta;
 import com.Veterinaria.Mejia.services.CategoriaService;
 import com.Veterinaria.Mejia.services.ClienteService;
@@ -20,7 +22,6 @@ import com.Veterinaria.Mejia.services.ProductoService;
 import com.Veterinaria.Mejia.services.ServicioService;
 import com.Veterinaria.Mejia.services.VentaService;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -36,14 +37,11 @@ public class VentaController {
     private final ClienteService clienteService; 
 
     // ==========================================
-    // 1. NUEVO MÉTODO: HISTORIAL DE VENTAS (Soluciona el 404)
+    // 1. HISTORIAL DE VENTAS
     // ==========================================
     @GetMapping
     public String historialVentas(Model model) {
-        // Asumo que tienes un método listarTodas() o findAll() en tu VentaService. 
-        // Si se llama distinto, solo ajusta el nombre del método aquí abajo:
         model.addAttribute("ventas", ventaService.listarTodas()); 
-        
         return "ventas/historial-ventas";
     }
 
@@ -59,6 +57,9 @@ public class VentaController {
         
         // Inicializa la lista vacía para el carrito
         nuevaVenta.setDetallesVentas(new ArrayList<>());
+        
+        // 🔥 CORRECCIÓN CRÍTICA: Previene el error de Thymeleaf al formatear nulos
+        nuevaVenta.setTotalVenta(java.math.BigDecimal.ZERO);
 
         model.addAttribute("venta", nuevaVenta);
         
@@ -72,28 +73,57 @@ public class VentaController {
     // 3. PROCESAMIENTO DE TRANSACCIÓN
     // ==========================================
     @PostMapping("/procesar")
-    public String procesarVenta(@Valid @ModelAttribute("venta") Venta venta, 
-                                // 🚨 CORRECCIÓN: Atrapamos los inputs sueltos del DNI y Nombre desde el HTML
+    public String procesarVenta(@ModelAttribute("venta") Venta venta, 
                                 @RequestParam(value = "dniIngresado", required = false) String dniIngresado,
                                 @RequestParam(value = "nombreIngresado", required = false) String nombreIngresado,
-                                BindingResult result, Model model) {
-        if (result.hasErrors()) {
-            cargarElementosInterfaz(model);
-            return "ventas/panel-caja";
-        }
+                                @RequestParam(value = "itemTipo", required = false) List<String> itemTipos,
+                                @RequestParam(value = "itemId", required = false) List<Integer> itemIds,
+                                @RequestParam(value = "itemCantidad", required = false) List<String> itemCantidades,
+                                @RequestParam(value = "itemPrecio", required = false) List<String> itemPrecios,
+                                @RequestParam(value = "itemSubtotal", required = false) List<String> itemSubtotales,
+                                Model model) {
 
         try {
-            // Aseguramos que la venta nazca como "Activa" (true) para que funcione tu método de anulación
-            venta.setEstado(true); 
+            // Validación de seguridad: Evitar procesar si la lista viene vacía
+            if (itemTipos == null || itemTipos.isEmpty()) {
+                throw new RuntimeException("El carrito no puede estar vacío.");
+            }
 
-            // 🚨 CORRECCIÓN: Enviamos los 3 parámetros exactos que pide tu VentaService
-            Venta ventaProcesada = ventaService.procesarVentaTransaccional(venta, dniIngresado, nombreIngresado);
+            // 1. Construimos el DTO
+            VentaRequestDTO request = new VentaRequestDTO();
+            request.setClienteDni(dniIngresado);
+            request.setClienteNombre(nombreIngresado);
+            request.setTipoPago(venta.getTipoPago());
+            
+            // Aseguramos que el Total no falle por problemas de comas/puntos
+            String totalStr = venta.getTotalVenta() != null ? venta.getTotalVenta().toString() : "0";
+            request.setTotal(new java.math.BigDecimal(totalStr.replace(",", ".")));
+            
+            // 2. Extraemos las listas de arrays y las convertimos a números seguros
+            List<ItemCarritoDTO> items = new ArrayList<>();
+            for (int i = 0; i < itemTipos.size(); i++) {
+                ItemCarritoDTO item = new ItemCarritoDTO();
+                item.setTipo(itemTipos.get(i));
+                item.setIdItem(itemIds.get(i));
+                
+                // El replace(",", ".") es el salvavidas contra los errores de idioma/decimales
+                item.setCantidad(new java.math.BigDecimal(itemCantidades.get(i).replace(",", ".")));
+                item.setPrecio(new java.math.BigDecimal(itemPrecios.get(i).replace(",", ".")));
+                item.setSubtotal(new java.math.BigDecimal(itemSubtotales.get(i).replace(",", ".")));
+                
+                items.add(item);
+            }
+            request.setItems(items);
+
+            // 3. Llamamos al servicio con el argumento DTO correcto
+            Venta ventaProcesada = ventaService.procesarVentaTransaccional(request);
             
             return "redirect:/ventas/imprimir/" + ventaProcesada.getId();
             
         } catch (RuntimeException e) {
             model.addAttribute("errorStock", e.getMessage());
             cargarElementosInterfaz(model);
+            venta.setTotalVenta(java.math.BigDecimal.ZERO);
             return "ventas/panel-caja";
         }
     }

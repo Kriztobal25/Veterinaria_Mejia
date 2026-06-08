@@ -51,6 +51,10 @@
                 <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMsg}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
+            <div th:if="${errorStock}" class="alert alert-danger alert-dismissible fade show mb-4 border-0 shadow-sm" role="alert">
+                <i class="bi bi-x-octagon-fill me-2"></i><span th:text="${errorStock}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
 
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
@@ -111,7 +115,7 @@
                                     <div class="fw-bold text-dark mb-1" th:text="${p.nombre}"></div>
                                     <div class="text-muted small">
                                         <span class="badge bg-light text-dark border badge-tipo me-1">P</span>
-                                        Stock: <span th:text="${p.stockTotal}"></span> u.
+                                        Stock: <span th:text="${p.stockTotal}"></span> u/kg
                                     </div>
                                 </div>
                                 <div class="text-end">
@@ -152,14 +156,15 @@
                             <input type="hidden" th:field="*{totalVenta}" id="input-total-final" value="0.00" />
                             
                             <div class="row g-3 mb-4">
-                                <div class="col-md-6">
-                                    <label class="form-label text-muted small fw-semibold">ID o DNI Cliente (Opcional)</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-person-fill"></i></span>
-                                        <input type="text" th:field="*{cliente.id}" class="form-control" placeholder="Dejar en blanco para Público General" />
-                                    </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted small fw-semibold">DNI (Opcional)</label>
+                                    <input type="text" name="dniIngresado" class="form-control" placeholder="Nro Documento" maxlength="15"/>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-8">
+                                    <label class="form-label text-muted small fw-semibold">Nombre Cliente (Opcional)</label>
+                                    <input type="text" name="nombreIngresado" class="form-control" placeholder="Público General si está vacío"/>
+                                </div>
+                                <div class="col-md-12">
                                     <label class="form-label text-muted small fw-semibold">Método de Pago</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light text-muted"><i class="bi bi-wallet2"></i></span>
@@ -237,20 +242,24 @@
             const id = el.getAttribute("data-id");
             const nombre = el.getAttribute("data-nombre");
             const precio = parseFloat(el.getAttribute("data-precio"));
-            const stock = parseInt(el.getAttribute("data-stock"));
+            const stock = parseFloat(el.getAttribute("data-stock"));
             const tbody = document.getElementById("cuerpo-carrito");
             
             let duplicado = false;
+            const valTipo = tipo === 'producto' ? 'PRODUCTO' : 'SERVICIO';
             
             // Verificar si ya existe en el carrito
             document.querySelectorAll("#cuerpo-carrito tr").forEach(tr => {
-                const hiddenId = tr.querySelector(`input[type='hidden'][name*='.${tipo}.id']`);
-                if (hiddenId && hiddenId.value === id) {
-                    const inputCant = tr.querySelector("input[type='number']");
-                    const cantidadActual = parseInt(inputCant.value);
+                const hiddenId = tr.querySelector("input[name='itemId']");
+                const hiddenTipo = tr.querySelector("input[name='itemTipo']");
+                
+                if (hiddenId && hiddenId.value === id && hiddenTipo && hiddenTipo.value === valTipo) {
+                    const inputCant = tr.querySelector("input[name='itemCantidad']");
+                    const cantidadActual = parseFloat(inputCant.value);
                     
                     if (cantidadActual < stock) {
-                        inputCant.value = cantidadActual + 1;
+                        // Aumentamos en 1 si es servicio, o dejamos escribir si es producto a granel
+                        inputCant.value = (cantidadActual + 1).toFixed(tipo === 'producto' ? 2 : 0);
                     } else if (tipo === 'producto') {
                         alert("Has alcanzado el límite de stock de este producto.");
                     }
@@ -263,23 +272,25 @@
                 return; 
             }
             
-            // Crear nueva fila
+            // Crear nueva fila con nombres simples
             const tr = document.createElement("tr");
-            const inputNombre = tipo === 'producto' ? `detallesVentas[${indice}].producto.id` : `detallesVentas[${indice}].servicio.id`;
             const labelTipo = tipo === 'producto' ? '<span class="badge bg-light text-dark border me-1">P</span>' : '<span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 me-1">S</span>';
-            
+            const stepYMin = tipo === 'producto' ? '0.01' : '1';
+
             tr.innerHTML = `
                 <td>
                     <div class="fw-bold text-dark small d-flex align-items-center">
                         ${labelTipo} <span>${nombre}</span>
                     </div>
-                    <input type="hidden" name="${inputNombre}" value="${id}">
+                    <input type="hidden" name="itemTipo" value="${valTipo}">
+                    <input type="hidden" name="itemId" value="${id}">
                 </td>
                 <td>
-                    <input type="number" name="detallesVentas[${indice}].cantidad" value="1" min="1" max="${stock}" onchange="recalcular()" class="form-control form-control-sm text-center fw-bold">
+                    <input type="number" name="itemCantidad" value="1" step="${stepYMin}" min="${stepYMin}" max="${stock}" onchange="recalcular()" class="form-control form-control-sm text-center fw-bold cantidad-input">
                 </td>
                 <td class="text-end text-muted small pe-3">S/. ${precio.toFixed(2)}
-                    <input type="hidden" name="detallesVentas[${indice}].precioUnitario" value="${precio}">
+                    <input type="hidden" name="itemPrecio" value="${precio}">
+                    <input type="hidden" name="itemSubtotal" class="input-subtotal" value="${precio}">
                 </td>
                 <td class="text-end fw-bold text-dark subtotal small pe-2">S/. ${precio.toFixed(2)}</td>
                 <td class="text-center">
@@ -297,11 +308,12 @@
         function recalcular() {
             let total = 0;
             document.querySelectorAll("#cuerpo-carrito tr").forEach(tr => {
-                const cant = parseInt(tr.querySelector("input[type='number']").value) || 0;
-                const prec = parseFloat(tr.querySelector("input[name*='precioUnitario']").value);
+                const cant = parseFloat(tr.querySelector(".cantidad-input").value) || 0;
+                const prec = parseFloat(tr.querySelector("input[name='itemPrecio']").value);
                 const sub = cant * prec;
                 
                 tr.querySelector(".subtotal").innerText = "S/. " + sub.toFixed(2);
+                tr.querySelector(".input-subtotal").value = sub.toFixed(2);
                 total += sub;
             });
             document.getElementById("label-total-visual").innerText = total.toFixed(2);
@@ -313,9 +325,9 @@
             const filas = document.querySelectorAll("#cuerpo-carrito tr").length;
             if (filas === 0) {
                 alert("No puedes procesar una venta vacía. Agrega productos o servicios al comprobante primero.");
-                return false; // Detiene el envío del formulario
+                return false; 
             }
-            return true; // Permite el envío
+            return true; 
         }
     </script>
 </body>

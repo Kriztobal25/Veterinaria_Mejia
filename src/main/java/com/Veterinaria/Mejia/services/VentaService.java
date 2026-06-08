@@ -51,6 +51,9 @@ public class VentaService {
         venta.setEstado(true);
         venta.setDetallesVentas(new ArrayList<>());
 
+        // 🔥 CORRECCIÓN: Le asignamos el ID del cajero (obligatorio para la BD)
+        venta.setUsuarioId(1);
+
         // =====================================================================
         // 1. LÓGICA INTELIGENTE DEL CLIENTE 
         // =====================================================================
@@ -142,7 +145,7 @@ public class VentaService {
     }
 
     // =========================================================================
-    // MÉTODOS DE LECTURA Y ANULACIÓN (Se mantienen idénticos a tu lógica original)
+    // MÉTODOS DE LECTURA Y ANULACIÓN
     // =========================================================================
     public Venta buscarPorId(Integer id) {
         return ventaRepository.findById(id)
