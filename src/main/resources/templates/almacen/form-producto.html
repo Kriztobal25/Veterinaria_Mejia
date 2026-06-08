@@ -1,340 +1,168 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Abastecimiento | Veterinaria Mejía</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --primary-color: #2563eb;
-            --secondary-color: #64748b;
-            --sidebar-width: 280px;
-            --header-height: 70px;
-        }
-        
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); min-height: 100vh; margin: 0; }
-        
-        .sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-width); height: 100vh; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); color: white; z-index: 1000; overflow-y: auto; }
-        .sidebar-brand { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 0.75rem; }
-        .sidebar-brand i { font-size: 1.75rem; color: var(--primary-color); }
-        .sidebar-brand h4 { font-weight: 700; margin: 0; }
-        .sidebar-menu { padding: 1rem 0; list-style: none; margin: 0; }
-        .sidebar-menu a { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1.5rem; color: rgba(255,255,255,0.7); text-decoration: none; transition: all 0.3s ease; }
-        .sidebar-menu a:hover, .sidebar-menu a.active { background: rgba(255,255,255,0.05); color: white; }
-        
-        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; }
-        .header { background: white; height: var(--header-height); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .user-menu { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 1rem; background: #f1f5f9; border-radius: 50px; }
-        .user-avatar { width: 35px; height: 35px; border-radius: 50%; background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
-        .content { padding: 2rem; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .fw-600 { font-weight: 600; }
-        .filter-box { background-color: #f8fafc; border-radius: 8px; padding: 15px; border: 1px dashed #cbd5e1; }
-    </style>
-</head>
+
+<head th:replace="~{fragments/head :: head('Nuevo Producto | VetMejía')}"></head>
+
 <body>
 
-    <div th:replace="~{siderbar :: menuLateral}"></div>
+    <div th:replace="~{fragments/sidebar :: menuLateral}"></div>
+
+    <style>
+        .main-content {
+            margin-left: 260px; /* Asegura que el contenido esté a la derecha del sidebar */
+            padding-top: 1rem;
+            position: relative;
+            z-index: 1; /* Garantiza que los clics funcionen en todo el formulario */
+        }
+    </style>
 
     <div class="main-content">
-        <header class="header">
-            <h5 class="mb-0 fw-bold text-secondary">Módulo de Almacén</h5>
-            <div class="header-right" th:if="${#authentication != null}">
-                <div class="user-menu">
-                    <div class="user-avatar text-uppercase" th:text="${#strings.substring(#authentication.name, 0, 1)}">A</div>
-                    <div class="text-start">
-                        <div class="fw-bold small" th:text="${#authentication.name}">admin</div>
-                        <small class="text-muted d-block" style="font-size: 11px;">Administrador</small>
-                    </div>
-                </div>
-            </div>
-        </header>
+        
+        <header th:replace="~{fragments/navbar :: topbar}"></header>
 
-        <main class="content">
+        <main class="content p-4">
             
-            <div th:if="${exito}" class="alert alert-success alert-dismissible fade show mb-4 border-0 shadow-sm" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i><span th:text="${exito}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-4 border-0 shadow-sm" role="alert">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${error}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-
-            <div class="mb-4">
-                <h2><i class="bi bi-box-seam text-primary me-2"></i>Panel de Control de Abastecimiento</h2>
-                <p class="text-muted">Centraliza la carga de inventario físico y la creación de clasificaciones maestras</p>
-            </div>
-
-            <div class="card mb-4 border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <ul class="nav nav-tabs card-header-tabs" id="tabAbastecimiento" role="tablist">
-                        <li class="nav-item"><button class="nav-link fw-600" onclick="cambiarTab(event, 'tab-stock')"><i class="bi bi-arrow-repeat me-1"></i>Actualizar Stock</button></li>
-                        <li class="nav-item"><button class="nav-link fw-600" onclick="cambiarTab(event, 'tab-producto')"><i class="bi bi-box me-1"></i>Nuevo Producto</button></li>
-                        <li class="nav-item"><button class="nav-link fw-600" onclick="cambiarTab(event, 'tab-categoria')"><i class="bi bi-folder me-1"></i>Nueva Categoría</button></li>
-                        <li class="nav-item"><button class="nav-link fw-600" onclick="cambiarTab(event, 'tab-proveedor')"><i class="bi bi-truck me-1"></i>Nuevo Proveedor</button></li>
-                        <li class="nav-item"><button class="nav-link fw-600" onclick="cambiarTab(event, 'tab-servicio')"><i class="bi bi-heart-pulse me-1"></i>Nuevo Servicio</button></li>
-                    </ul>
+            <div class="d-flex align-items-center mb-4">
+                <a th:href="@{/almacen/productos}" class="btn btn-outline-secondary me-3 shadow-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <div>
+                    <h2 class="mb-1 fw-bold text-dark"><i class="bi bi-box-seam text-primary me-2"></i>Registrar Nuevo Producto</h2>
+                    <p class="text-muted mb-0">Agrega un nuevo artículo al catálogo para poder recibir stock y venderlo.</p>
                 </div>
-                
-                <div class="card-body">
-                    
-                    <div id="tab-stock" class="tab-content" style="display: none;">
-                        <h5 class="card-title text-secondary mb-3">Actualizar Inventario General</h5>
-                        
-                        <div class="row g-3 mb-4 filter-box">
-                            <div class="col-12"><span class="small text-danger fw-600 d-block mb-1"><i class="bi bi-funnel-fill"></i> PASO 1: Seleccione Categoría o Especie para habilitar los productos:</span></div>
-                            <div class="col-md-6">
-                                <label class="small fw-bold text-secondary">Filtrar por Categoría:</label>
-                                <select id="filtroCategoria" class="form-select" onchange="ejecutarFiltroCombinado()">
-                                    <option value="">-- Seleccione Categoría --</option>
-                                    <option th:each="c : ${categorias}" th:value="${c.id}" th:text="${c.nombre}"></option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="small fw-bold text-secondary">Filtrar por Especie:</label>
-                                <select id="filtroEspecie" class="form-select" onchange="ejecutarFiltroCombinado()">
-                                    <option value="">-- Seleccione Especie --</option>
-                                    <option th:each="esp : ${especies}" th:value="${esp.id}" th:text="${esp.nombreEspecie}"></option>
-                                </select>
-                            </div>
-                        </div>
+            </div>
 
-                        <form th:action="@{/almacen/ingreso/guardar}" th:object="${ingresoStock}" method="POST" class="needs-validation" novalidate>
-                            <input type="hidden" th:field="*{usuarioId}" />
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-600">PASO 2: Seleccionar Producto Filtrado:</label>
-                                    <select id="selectProductoTarget" th:field="*{producto.id}" class="form-select" required disabled>
-                                        <option value="">-- Primero elija un filtro arriba --</option>
-                                        <option th:each="p : ${productos}" th:value="${p.id}" th:text="${p.nombre}" th:data-categoria="${p.categoria != null ? p.categoria.id : '0'}" th:data-especie="${p.especie != null ? p.especie.id : '0'}"></option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-600">Proveedor de la carga:</label>
-                                    <select th:field="*{proveedor.id}" class="form-select" required>
-                                        <option value="">-- Elija un Proveedor --</option>
-                                        <option th:each="prov : ${proveedores}" th:value="${prov.id}" th:text="${prov.nombreProveedor}"></option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-600">Cantidad a Ingresar (Rellenar Stock):</label>
-                                    <input type="number" step="0.01" id="inputCantidad" th:field="*{cantidad}" class="form-control" placeholder="0.00" oninput="calcularInversionEnVivo()" required />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-600">Precio Compra Unitario de Costo (S/.):</label>
-                                    <input type="number" step="0.01" id="inputPrecioCosto" th:field="*{precioCompraUnitario}" class="form-control" placeholder="0.00" oninput="calcularInversionEnVivo()" required />
-                                </div>
-                                <div class="col-12 mt-3">
-                                    <div class="p-3 bg-light border rounded d-flex justify-content-between align-items-center">
-                                        <div class="text-secondary fw-600"><i class="bi bi-cash-coin text-success me-1"></i> Resumen económico de la carga:</div>
-                                        <div class="fw-bold text-primary fs-5" id="txtInversionTotal">Total Inversión: S/. 0.00</div>
+            <div th:if="${errorMsg}" class="alert alert-danger alert-dismissible fade show mb-4 border-0 shadow-sm" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMsg}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                        <div class="card-body p-4 p-md-5">
+                            
+                            <form th:action="@{/almacen/productos/guardar}" method="POST" th:object="${producto}">
+                                
+                                <h5 class="fw-bold text-dark mb-4 border-bottom pb-2">Información Principal</h5>
+                                
+                                <div class="row g-4 mb-5">
+                                    <div class="col-md-12">
+                                        <label class="form-label fw-bold text-dark">Nombre del Producto <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" th:field="*{nombre}" 
+                                               placeholder="Ej: Ricocan Adultos Carne" 
+                                               pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$" 
+                                               maxlength="100" 
+                                               title="Solo se permiten letras y espacios (Máximo 100 caracteres)" 
+                                               required autofocus>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold text-dark">Categoría <span class="text-danger">*</span></label>
+                                        <select class="form-select" th:field="*{categoria.id}" required>
+                                            <option value="" selected disabled>-- Seleccione Categoría --</option>
+                                            <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"></option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold text-dark">Especie <span class="text-danger">*</span></label>
+                                        <select class="form-select" th:field="*{especie.id}" required>
+                                            <option value="" selected disabled>-- Seleccione Especie --</option>
+                                            <option th:each="esp : ${especies}" th:value="${esp.id}" th:text="${esp.nombreEspecie}"></option>
+                                        </select>
                                     </div>
                                 </div>
-                                <div class="col-12 text-end mt-4">
-                                    <button type="submit" class="btn btn-primary fw-600"><i class="bi bi-arrow-down-square me-1"></i> Rellenar Stock e Incrementar Inventario</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
 
-                    <div id="tab-producto" class="tab-content" style="display: none;">
-                        <h5 class="card-title text-secondary mb-4">Registrar Nuevo Artículo en Catálogo</h5>
-                        <form th:action="@{/almacen/productos/guardar}" method="POST" class="needs-validation" novalidate>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-600">Nombre del Producto:</label>
-                                    <input type="text" name="nombre" class="form-control" placeholder="Ej: Ricocan Cachorros 1kg" required />
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-600">Categoría Asociada:</label>
-                                    <select name="categoria.id" class="form-select" required>
-                                        <option value="">-- Seleccione --</option>
-                                        <option th:each="c : ${categorias}" th:value="${c.id}" th:text="${c.nombre}"></option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-600">Especie Destino:</label>
-                                    <select name="especie.id" class="form-select">
-                                        <option value="0">-- Seleccione --</option>
-                                        <option th:each="esp : ${especies}" th:value="${esp.id}" th:text="${esp.nombreEspecie}"></option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-600">Precio de Venta al Público (S/.):</label>
-                                    <input type="number" step="0.01" name="precioVentaActual" class="form-control" placeholder="0.00" required />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-600">Reserva de Stock Mínimo:</label>
-                                    <input type="number" step="0.1" name="stockMinimo" value="12.00" class="form-control" required />
-                                </div>
-                                <div class="col-12 text-end mt-4">
-                                    <button type="submit" class="btn btn-success fw-600"><i class="bi bi-floppy me-1"></i>Guardar en Tabla Productos</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
+                                <h5 class="fw-bold text-dark mb-4 border-bottom pb-2">Precios, Unidades y Stock</h5>
 
-                    <div id="tab-categoria" class="tab-content" style="display: none;">
-                        <h5 class="card-title text-secondary mb-3">Crear Nueva Clasificación de Almacén</h5>
-                        <form th:action="@{/almacen/categorias/guardar}" th:object="${categoria}" method="POST" class="needs-validation" novalidate>
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-9">
-                                    <label class="form-label fw-600">Nombre de la Categoría:</label>
-                                    <input type="text" th:field="*{nombre}" class="form-control" placeholder="Ej: Vacunas, Fármacos" required />
-                                </div>
-                                <div class="col-md-3 align-self-end">
-                                    <button type="submit" class="btn btn-primary w-100 fw-600">Crear</button>
-                                </div>
-                            </div>
-                        </form>
+                                <div class="row g-4">
+                                    <div class="col-md-12">
+                                        <label class="form-label fw-bold text-dark">¿Cómo se vende este producto? <span class="text-danger">*</span></label>
+                                        <div class="d-flex gap-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" th:field="*{tipoUnidad}" value="unidad" id="um1" required>
+                                                <label class="form-check-label" for="um1">Por Unidad (Sacos, Latas, Cajas)</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" th:field="*{tipoUnidad}" value="kg" id="um2">
+                                                <label class="form-check-label" for="um2">A Granel (Kilos)</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" th:field="*{tipoUnidad}" value="litros" id="um3">
+                                                <label class="form-check-label" for="um3">Líquidos (Litros)</label>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <h6 class="text-secondary fw-bold mb-3 border-top pt-4"><i class="bi bi-list-task me-1"></i> Clasificaciones Maestras</h6>
-                        <div class="table-responsive border rounded bg-light">
-                            <table class="table table-hover align-middle mb-0" style="font-size: 14px;">
-                                <thead class="table-white">
-                                    <tr><th class="ps-3">ID</th><th>Nombre</th><th class="text-center">Productos</th><th class="text-center">Acción</th></tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="c : ${categoriasConConteo}">
-                                        <td class="ps-3 fw-bold text-muted" th:text="${c.id}"></td>
-                                        <td class="fw-600 text-dark" th:text="${c.nombre}"></td>
-                                        <td class="text-center">
-                                            <span th:text="${c.cantidadProductos} + ' asignados'" th:class="${c.cantidadProductos > 0} ? 'badge bg-primary' : 'badge bg-secondary'"></span>
-                                        </td>
-                                        <td class="text-center">
-                                            <a th:if="${c.cantidadProductos == 0}" th:href="@{/almacen/categorias/eliminar/{id}(id=${c.id})}" class="btn btn-sm btn-outline-danger">Borrar</a>
-                                            <button th:if="${c.cantidadProductos > 0}" class="btn btn-sm btn-light" disabled>Restringido</button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold text-dark">Precio de Inversión / Compra <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light fw-bold text-success">S/</span>
+                                            <input type="number" class="form-control" th:field="*{precioInversion}" 
+                                                   step="0.01" min="0.01" max="999.00" 
+                                                   placeholder="0.00" required>
+                                        </div>
+                                        <div class="form-text">Límite máximo permitido: S/ 999.00</div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold text-dark">Precio al Público <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light fw-bold text-primary">S/</span>
+                                            <input type="number" class="form-control" th:field="*{precioVentaActual}" 
+                                                   step="0.01" min="0.01" 
+                                                   placeholder="0.00" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold text-dark">Stock Inicial <span class="text-muted fw-normal">(Opcional)</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-boxes text-muted"></i></span>
+                                            <input type="number" class="form-control" th:field="*{stockTotal}" 
+                                                   step="0.01" min="0" max="99.00" 
+                                                   placeholder="0">
+                                        </div>
+                                        <div class="form-text">Máximo ingreso inicial: 99</div>
+                                    </div>
+
+                                </div>
+
+                                <hr class="my-5 text-muted">
+
+                                <div class="col-12 d-flex justify-content-end gap-2">
+                                    <a th:href="@{/almacen/productos}" class="btn btn-light fw-600 px-4">Cancelar</a>
+                                    <button type="submit" class="btn btn-primary fw-600 px-4 shadow-sm">
+                                        <i class="bi bi-save me-2"></i>Guardar Producto
+                                    </button>
+                                </div>
+
+                            </form>
+                            
                         </div>
                     </div>
-
-                    <div id="tab-proveedor" class="tab-content" style="display: none;">
-                        <h5 class="card-title text-secondary mb-4">Registrar Distribuidora Comercial</h5>
-                        <form th:action="@{/almacen/proveedores/guardar}" th:object="${proveedor}" method="POST" class="needs-validation" novalidate>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-600">Razón Social:</label>
-                                    <input type="text" th:field="*{nombreProveedor}" class="form-control" required />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-600">Número de RUC (11 dígitos):</label>
-                                    <input type="text" th:field="*{ruc}" maxlength="11" minlength="11" class="form-control" required />
-                                </div>
-                                <div class="col-md-12">
-                                    <label class="form-label fw-600">Contacto / Teléfono:</label>
-                                    <input type="text" th:field="*{contacto}" class="form-control" />
-                                </div>
-                                <div class="col-12 text-end mt-4">
-                                    <button type="submit" class="btn btn-primary fw-600"><i class="bi bi-truck me-1"></i> Registrar Distribuidora</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div id="tab-servicio" class="tab-content" style="display: none;">
-                        <h5 class="card-title text-secondary mb-4">Registrar Prestación Médica o Clínica</h5>
-                        <form th:action="@{/almacen/servicios/guardar}" method="POST" class="needs-validation" novalidate>
-                            <div class="row g-3">
-                                <div class="col-md-8">
-                                    <label class="form-label fw-600">Nombre del Servicio:</label>
-                                    <input type="text" name="nombreServicio" class="form-control" required />
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label fw-600">Precio Base del Servicio (S/.):</label>
-                                    <input type="number" step="0.01" name="precioServicio" class="form-control" required />
-                                </div>
-                                <div class="col-12 text-end mt-4">
-                                    <button type="submit" class="btn btn-primary fw-600"><i class="bi bi-heart-pulse me-1"></i> Dar de Alta Servicio</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-
                 </div>
+                
+                <div class="col-lg-4 d-none d-lg-block">
+                    <div class="card border-0 bg-light rounded-4 sticky-top" style="top: 100px;">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle-fill text-primary me-2"></i>Reglas de Inventario</h6>
+                            <ul class="text-muted small ps-3 mb-0" style="line-height: 1.8;">
+                                <li><strong>Inversión Total:</strong> El sistema calculará el valor de inversión total multiplicando el stock por su precio de compra.</li>
+                                <li>El límite máximo de ingreso por transacción es de 99.</li>
+                                <li>El sistema alertará automáticamente cuando el stock caiga por debajo de <strong>12 (Stock Mínimo fijo)</strong>.</li>
+                                <li>El producto nace como <strong>Activo</strong>.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
             </div>
+            
         </main>
     </div>
 
-    <script>
-        function cambiarTab(event, tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
-            document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabId).style.display = 'block';
-            if (event) event.currentTarget.classList.add('active');
-            localStorage.setItem('activeTabVeterinaria', tabId);
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            const tabGuardado = localStorage.getItem('activeTabVeterinaria') || 'tab-stock';
-            const botonActivar = Array.from(document.querySelectorAll('.nav-link')).find(btn => btn.getAttribute('onclick').includes(tabGuardado));
-            if (botonActivar) botonActivar.click();
-            else cambiarTab(null, 'tab-stock');
-        });
-
-        function ejecutarFiltroCombinado() {
-            const cat = document.getElementById('filtroCategoria').value;
-            const esp = document.getElementById('filtroEspecie').value;
-            const select = document.getElementById('selectProductoTarget');
-
-            if (!cat && !esp) {
-                select.disabled = true;
-                select.value = "";
-                select.options[0].text = "-- Primero elija un filtro arriba --";
-                return;
-            }
-
-            select.disabled = false;
-            select.value = "";
-            select.options[0].text = "-- Seleccione un Producto --";
-
-            let visibles = 0;
-            for (let i = 1; i < select.options.length; i++) {
-                const opt = select.options[i];
-                const optCat = opt.getAttribute('data-categoria');
-                const optEsp = opt.getAttribute('data-especie');
-                const matchCat = (!cat || cat === optCat);
-                const matchEsp = (!esp || esp === optEsp);
-
-                if (matchCat && matchEsp) {
-                    opt.style.display = 'block';
-                    visibles++;
-                } else {
-                    opt.style.display = 'none';
-                }
-            }
-
-            if (visibles === 0) select.options[0].text = "-- No hay productos para este filtro --";
-        }
-
-        function calcularInversionEnVivo() {
-            const cant = parseFloat(document.getElementById('inputCantidad').value) || 0;
-            const precio = parseFloat(document.getElementById('inputPrecioCosto').value) || 0;
-            document.getElementById('txtInversionTotal').innerText = "Total Inversión: S/. " + (cant * precio).toFixed(2);
-        }
-
-        (function () {
-            'use strict'
-            var forms = document.querySelectorAll('.needs-validation')
-            Array.prototype.slice.call(forms).forEach(function (form) {
-                form.addEventListener('submit', function (event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated')
-                }, false)
-            })
-        })()
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

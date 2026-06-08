@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.Veterinaria.Mejia.models.Venta;
 import com.Veterinaria.Mejia.repository.DetalleVentaRepository;
+import com.Veterinaria.Mejia.repository.MermaRepository;
 import com.Veterinaria.Mejia.repository.VentaRepository;
 
 @Service
@@ -25,42 +26,40 @@ public class ReporteService {
     @Autowired
     private DetalleVentaRepository detalleVentaRepository;
 
-    // =================================================================
-    // MOTOR PRINCIPAL QUE ALIMENTA AL CONTROLADOR
-    // =================================================================
+    @Autowired
+    private MermaRepository mermaRepository; // CONECTADO A LA TABLA MERMAS
+
     public Map<String, Object> generarReporteDashboard(String rango) {
         Map<String, Object> reporte = new HashMap<>();
         LocalDateTime fechaInicio = calcularFechaInicio(rango);
 
-        // Extraemos todas las ventas válidas de ese periodo para procesarlas en memoria
         List<Venta> ventasDelPeriodo = ventaRepository.findByFechaEmisionAfterAndEstado(fechaInicio, true);
 
-        // 1. CÁLCULO DE MÉTRICAS FINANCIERAS (KPIs)
-        BigDecimal ingresosVentas = calcularIngresosBrutos(ventasDelPeriodo);
-        BigDecimal valorInvertido = calcularInversion(fechaInicio);
-        BigDecimal perdidasTotales = calcularPerdidas(); // Si hay ventas anuladas o mermas
-        BigDecimal gananciaNeta = ingresosVentas.subtract(valorInvertido).subtract(perdidasTotales);
+        BigDecimal ingresosBrutos = calcularIngresosBrutos(ventasDelPeriodo);
+        BigDecimal inversionVentas = calcularInversion(fechaInicio);
+        
+        // CÁLCULO DE PÉRDIDAS DESDE LA NUEVA TABLA
+        BigDecimal perdidas = mermaRepository.calcularTotalPerdidasDesdeJPQL(fechaInicio);
+        if (perdidas == null) perdidas = BigDecimal.ZERO;
+        
+        BigDecimal gananciaNeta = ingresosBrutos.subtract(inversionVentas).subtract(perdidas);
 
         reporte.put("cantidadVentas", ventasDelPeriodo.size());
-        reporte.put("ingresosVentas", ingresosVentas);
-        reporte.put("valorInvertido", valorInvertido);
-        reporte.put("perdidasTotales", perdidasTotales);
+        reporte.put("ingresosBrutos", ingresosBrutos);
+        reporte.put("inversionVentas", inversionVentas);
+        reporte.put("perdidas", perdidas);
         reporte.put("gananciaNeta", gananciaNeta);
 
-        // 2. TABLA: TOP 10 PRODUCTOS (Llama al query de tu DetalleVentaRepository)
         reporte.put("topProductos", detalleVentaRepository.findTop10ProductosVendidos(fechaInicio, null));
-
-        // 3. GRÁFICOS DINÁMICOS SEGÚN LA OPCIÓN
+        
         Map<String, BigDecimal> datosAgrupados = agruparVentasParaGrafico(ventasDelPeriodo, rango);
-        reporte.put("labelsGrafico", new ArrayList<>(datosAgrupados.keySet())); // Eje X (Horas o Días)
-        reporte.put("datosGrafico", new ArrayList<>(datosAgrupados.values()));  // Eje Y (Dinero S/)
+        reporte.put("graficoLabels", new ArrayList<>(datosAgrupados.keySet()));
+        reporte.put("graficoDatosVentas", new ArrayList<>(datosAgrupados.values()));
+        reporte.put("graficoDatosGanancias", new ArrayList<>(datosAgrupados.values()));
 
         return reporte;
     }
 
-    // =================================================================
-    // LÓGICA DE FECHAS
-    // =================================================================
     private LocalDateTime calcularFechaInicio(String rango) {
         LocalDateTime now = LocalDateTime.now();
         switch (rango) {
@@ -71,9 +70,6 @@ public class ReporteService {
         }
     }
 
-    // =================================================================
-    // CÁLCULOS MATEMÁTICOS FINANCIEROS
-    // =================================================================
     private BigDecimal calcularIngresosBrutos(List<Venta> ventas) {
         return ventas.stream()
                 .map(Venta::getTotalVenta)
@@ -81,25 +77,12 @@ public class ReporteService {
     }
 
     private BigDecimal calcularInversion(LocalDateTime fechaInicio) {
-        // Llama a tu base de datos para sumar el (Costo del Producto * Cantidad Vendida)
         BigDecimal inversion = detalleVentaRepository.calcularInversionDeVentasJPQL(fechaInicio);
         return inversion != null ? inversion : BigDecimal.ZERO;
     }
 
-    private BigDecimal calcularPerdidas() {
-        // Aquí puedes poner la lógica futura si tienes productos vencidos, 
-        // o si tienes registro de "mermas". Por ahora iniciamos en 0.
-        return BigDecimal.ZERO;
-    }
-
-    // =================================================================
-    // PROCESAMIENTO INTELIGENTE DEL GRÁFICO (EJE X y Y)
-    // =================================================================
     private Map<String, BigDecimal> agruparVentasParaGrafico(List<Venta> ventas, String rango) {
-        // Usamos TreeMap para que las fechas/horas se ordenen solas de menor a mayor
         Map<String, BigDecimal> ventasAgrupadas = new TreeMap<>();
-        
-        // Si el filtro es "hoy", mostramos horas (Ej: 14:00). Si es semana/mes, mostramos días (Ej: 07/06)
         DateTimeFormatter formatoEjeX = rango.equals("hoy") ? 
                                         DateTimeFormatter.ofPattern("HH:00") : 
                                         DateTimeFormatter.ofPattern("dd/MM");
@@ -109,7 +92,6 @@ public class ReporteService {
             BigDecimal montoActual = ventasAgrupadas.getOrDefault(etiqueta, BigDecimal.ZERO);
             ventasAgrupadas.put(etiqueta, montoActual.add(v.getTotalVenta()));
         }
-
         return ventasAgrupadas;
     }
 }

@@ -42,9 +42,13 @@ public class UsuarioController {
     // ==========================================
     @GetMapping("/nuevo")
     public String mostrarFormularioRegistro(Model model) {
+        // 1. Enviamos un usuario vacío para que el formulario lo llene
         model.addAttribute("usuario", new Usuario());
-        model.addAttribute("roles", roleRepository.findAll());
-        return "usuarios/form-usuario"; // Asumiendo que creaste un HTML para este formulario
+        
+        // 2. Enviamos la lista de roles desde la base de datos para el menú desplegable
+        model.addAttribute("roles", roleRepository.findAll()); 
+        
+        return "usuarios/form-usuario"; // Aquí debe coincidir con el nombre del archivo que creamos arriba
     }
 
     // ==========================================
