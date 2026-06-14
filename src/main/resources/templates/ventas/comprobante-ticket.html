@@ -2,65 +2,174 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Ticket de Venta</title>
+    <title>Ticket de Venta | Veterinaria Mejía</title>
     <style>
-        body { font-family: 'Courier New', Courier, monospace; width: 72mm; font-size: 12px; }
+        /* Estilos optimizados para Impresora Térmica (80mm) */
+        @page { margin: 0; }
+        body { 
+            font-family: 'Courier New', Courier, monospace; 
+            color: #000; 
+            margin: 0 auto; 
+            padding: 5mm; 
+            width: 72mm; /* Ancho imprimible estándar */
+            font-size: 12px; 
+            line-height: 1.4; 
+        }
+        
+        /* Utilidades de texto */
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .text-left { text-align: left; }
         .bold { font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin: 5px 0; }
-        td { padding: 3px 0; }
-        .total-final { border-top: 1px dashed #000; font-weight: bold; }
+        .small { font-size: 10px; }
+        
+        /* Encabezado */
+        .header h2 { margin: 0 0 5px 0; font-size: 16px; letter-spacing: 1px; font-weight: 900; }
+        .info-local { margin-bottom: 10px; font-size: 11px; }
+        
+        /* Divisores */
+        .divisor { border-top: 1px dashed #000; margin: 8px 0; }
+        .divisor-doble { border-top: 2px dashed #000; margin: 8px 0; }
+        
+        /* Tabla de productos */
+        table { width: 100%; border-collapse: collapse; margin: 5px 0; font-size: 11px; }
+        th { border-bottom: 1px dashed #000; padding-bottom: 4px; }
+        td { padding: 4px 0; vertical-align: top; }
+        .col-cant { width: 12%; text-align: center; }
+        .col-desc { width: 48%; text-align: left; padding-right: 5px; }
+        .col-punit { width: 20%; text-align: right; padding-right: 5px; }
+        .col-subt { width: 20%; text-align: right; font-weight: bold; }
+        
+        /* Totales */
+        .totales-box { margin-top: 10px; font-size: 12px; }
+        .fila-total { display: flex; justify-content: space-between; margin-bottom: 3px; }
+        .fila-total-final { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 14px; 
+            font-weight: bold; 
+            margin-top: 5px; 
+            padding-top: 5px; 
+            border-top: 1px dashed #000; 
+        }
+        
+        /* Pie de página */
+        .footer { margin-top: 20px; }
+        
+        /* Ocultar márgenes del navegador al imprimir */
+        @media print { body { padding: 0; } }
     </style>
 </head>
 <body>
-    <div class="text-center">
+
+    <div class="header text-center">
         <h2>VETERINARIA MEJÍA</h2>
-        <p>RUC: 10453829101</p>
+        <div class="info-local">
+            <span class="bold">RUC: 10453829101</span><br>
+            Cuidado Profesional y Clínica<br>
+            Av. Central S/N - Lima, Perú<br>
+            Teléfono: 948 572 910
+        </div>
     </div>
 
-    <div>
-        <p class="bold" th:text="${venta.tipoComprobante} + ' ELECTRÓNICA'"></p>
-        <p>Nº: <span th:text="${venta.serie} + '-' + ${venta.correlativo}"></span></p>
-        <p>FECHA: <span th:text="${#temporals.format(venta.fechaEmision, 'dd/MM/yyyy HH:mm')}"></span></p>
-        <p>CAJERO ID: <span th:text="${venta.usuarioId}"></span></p>
+    <div class="divisor-doble"></div>
+
+    <div style="font-size: 11px;">
+        <div class="text-center" style="margin-bottom: 5px;">
+            <span class="bold" th:text="${#strings.toUpperCase(venta.tipoComprobante)} + ' ELECTRÓNICA'"></span><br>
+            <span class="bold" style="font-size: 13px;" th:text="${venta.serie} + '-' + ${#numbers.formatInteger(venta.correlativo, 6)}"></span>
+        </div>
+        
+        <table>
+            <tr>
+                <td style="width: 35%;" class="bold">FECHA EMISIÓN</td>
+                <td style="width: 5%;">:</td>
+                <td style="width: 60%;" th:text="${#temporals.format(venta.fechaEmision, 'dd/MM/yyyy HH:mm')}"></td>
+            </tr>
+            <tr>
+                <td class="bold">MÉTODO PAGO</td>
+                <td>:</td>
+                <td th:text="${#strings.toUpperCase(venta.tipoPago)}"></td>
+            </tr>
+            <tr>
+                <td class="bold">CAJA / VEND.</td>
+                <td>:</td>
+                <td th:text="'CAJA 01 (ID:' + ${venta.usuarioId} + ')'"></td>
+            </tr>
+            <tr>
+                <td class="bold">CLIENTE</td>
+                <td>:</td>
+                <td>PÚBLICO GENERAL</td>
+            </tr>
+        </table>
     </div>
 
-    <div>--------------------------------</div>
+    <div class="divisor"></div>
 
     <table>
         <thead>
             <tr>
-                <th class="text-left">DESC.</th>
-                <th class="text-center">CANT.</th>
-                <th class="text-right">TOTAL</th>
+                <th class="col-cant">CANT</th>
+                <th class="col-desc">DESCRIPCIÓN</th>
+                <th class="col-punit">P.UNIT</th>
+                <th class="col-subt">TOTAL</th>
             </tr>
         </thead>
         <tbody>
             <tr th:each="det : ${venta.detallesVentas}">
-                <td class="text-left">
+                <td class="col-cant" th:text="${det.cantidad}"></td>
+                
+                <td class="col-desc">
                     <span th:if="${det.producto != null}" th:text="${det.producto.nombre}"></span>
                     <span th:if="${det.servicio != null}" th:text="${det.servicio.nombreServicio}"></span>
                 </td>
-                <td class="text-center" th:text="${det.cantidad}"></td>
-                <td class="text-right" th:text="${#numbers.formatDecimal(det.subtotal, 1, 2)}"></td>
+                
+                <td class="col-punit" th:text="${#numbers.formatDecimal(det.precioUnitario, 1, 'COMMA', 2, 'POINT')}"></td>
+                
+                <td class="col-subt" th:text="${#numbers.formatDecimal(det.subtotal, 1, 'COMMA', 2, 'POINT')}"></td>
             </tr>
         </tbody>
     </table>
 
-    <div class="total-final">
-        <p>TOTAL A PAGAR: S/ <span th:text="${#numbers.formatDecimal(venta.totalVenta, 1, 2)}"></span></p>
+    <div class="divisor"></div>
+
+    <div class="totales-box">
+        <div class="fila-total">
+            <span>OP. GRAVADA:</span>
+            <span th:text="'S/ ' + ${#numbers.formatDecimal(venta.totalVenta / 1.18, 1, 'COMMA', 2, 'POINT')}"></span>
+        </div>
+        <div class="fila-total">
+            <span>I.G.V. (18%):</span>
+            <span th:text="'S/ ' + ${#numbers.formatDecimal(venta.totalVenta - (venta.totalVenta / 1.18), 1, 'COMMA', 2, 'POINT')}"></span>
+        </div>
+        
+        <div class="fila-total-final">
+            <span>TOTAL A PAGAR:</span>
+            <span th:text="'S/ ' + ${#numbers.formatDecimal(venta.totalVenta, 1, 'COMMA', 2, 'POINT')}"></span>
+        </div>
     </div>
 
-    <div class="text-center">
-        <p>*** GRACIAS POR SU PREFERENCIA ***</p>
+    <div class="divisor-doble"></div>
+
+    <div class="footer text-center">
+        <span class="bold">*** GRACIAS POR SU PREFERENCIA ***</span><br>
+        <div class="small" style="margin-top: 8px;">
+            Gracias por confiar el cuidado de su engreído a nuestro equipo médico.<br>
+            Conserve este comprobante para cualquier cambio o devolución dentro de las próximas 48 horas.<br>
+        </div>
+        <br>
+        <span class="small" style="color: #666;">-- Sistema VetMejía POS --</span>
     </div>
 
     <script>
         window.onload = function() {
+            // Lanza el cuadro de impresión
             window.print();
-            setTimeout(function() { window.location.href = "/ventas/nuevo"; }, 1500);
+            
+            // Regresa a la caja después de 1.5s
+            setTimeout(function() { 
+                window.location.href = "/ventas/nuevo"; 
+            }, 1500);
         }
     </script>
 </body>

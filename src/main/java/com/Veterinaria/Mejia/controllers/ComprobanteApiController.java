@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.Veterinaria.Mejia.models.Cliente;
 import com.Veterinaria.Mejia.models.Producto;
 import com.Veterinaria.Mejia.models.Servicio;
+import com.Veterinaria.Mejia.repository.ClienteRepository;
 import com.Veterinaria.Mejia.repository.ProductoRepository;
 import com.Veterinaria.Mejia.repository.ServicioRepository;
 
@@ -28,6 +30,9 @@ public class ComprobanteApiController {
 
     @Autowired
     private ServicioRepository servicioRepository;
+
+    @Autowired
+    private ClienteRepository clienteRepository;
 
     /**
      * Obtiene de forma asíncrona el precio de venta y el stock actual de un producto.
@@ -75,6 +80,29 @@ public class ComprobanteApiController {
         if (serv != null) {
             respuesta.put("success", true);
             respuesta.put("precio", serv.getPrecioServicio());
+        } else {
+            respuesta.put("success", false);
+        }
+        
+        return ResponseEntity.ok(respuesta);
+    }
+
+    /**
+     * Busca un cliente por su documento de identidad (DNI/RUC).
+     *
+     * @param dni Documento a buscar.
+     * @return ResponseEntity con el nombre del cliente si fue encontrado.
+     */
+    @GetMapping("/cliente/{dni}")
+    public ResponseEntity<Map<String, Object>> obtenerInfoCliente(@PathVariable String dni) {
+        Map<String, Object> respuesta = new HashMap<>();
+        
+        // Utilizamos el método ya existente en tu ClienteRepository
+        Cliente cliente = clienteRepository.findByDniJPQL(dni).orElse(null);
+        
+        if (cliente != null) {
+            respuesta.put("success", true);
+            respuesta.put("nombre", cliente.getNombre());
         } else {
             respuesta.put("success", false);
         }

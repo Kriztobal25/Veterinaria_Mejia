@@ -13,6 +13,13 @@
                 --primary-color: #3b82f6;
             }
             
+            /* Ajuste dinámico del contenido principal */
+            .main-content { 
+                margin-left: var(--sidebar-width); 
+                transition: margin-left 0.3s ease; 
+            }
+            body.sidebar-collapsed .main-content { margin-left: 0; }
+            
             .sidebar {
                 position: fixed;
                 top: 0;
@@ -25,6 +32,11 @@
                 overflow-y: auto;
                 box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
                 transition: all 0.3s ease;
+                transform: translateX(0);
+            }
+            
+            body.sidebar-collapsed .sidebar {
+                transform: translateX(-100%);
             }
             
             .sidebar::-webkit-scrollbar { width: 6px; }
@@ -104,6 +116,35 @@
             .border-top-sidebar {
                 border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
             }
+            
+        /* Estilos base y posicionamiento del botón hamburguesa */
+        .btn-toggle-sidebar {
+            position: fixed;
+            top: 20px;
+            left: var(--sidebar-width);
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 4px 0 8px rgba(0,0,0,0.2);
+            transition: left 0.3s ease, background 0.3s ease;
+            z-index: 1050;
+        }
+        body.sidebar-collapsed .btn-toggle-sidebar {
+            left: 0;
+        }
+        
+        /* Efecto de resplandor (glow) y sombra al pasar el cursor */
+        .btn-toggle-sidebar:hover {
+            background: #2563eb !important;
+            box-shadow: 4px 0 18px rgba(59, 130, 246, 0.8) !important;
+        }
         </style>
 
         <div class="sidebar-brand">

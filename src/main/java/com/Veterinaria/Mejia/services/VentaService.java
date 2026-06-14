@@ -40,8 +40,13 @@ public class VentaService {
     @Autowired
     private ServicioRepository servicioRepository;
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Venta procesarVentaTransaccional(VentaRequestDTO request) {
+        
+        // 0. REGLA DE NEGOCIO: Evitar ventas en blanco
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new IllegalArgumentException("La venta no puede procesarse porque el carrito está vacío.");
+        }
         
         // Inicializamos la cabecera de la venta con los datos del Request
         Venta venta = new Venta();
@@ -106,8 +111,6 @@ public class VentaService {
             DetalleVenta detalle = new DetalleVenta();
             detalle.setVenta(venta);
             detalle.setCantidad(item.getCantidad());
-            detalle.setPrecioUnitario(item.getPrecio());
-            detalle.setSubtotal(item.getSubtotal());
 
             // A) LÓGICA PARA SERVICIOS CLÍNICOS
             if ("SERVICIO".equalsIgnoreCase(item.getTipo())) {
@@ -119,11 +122,26 @@ public class VentaService {
                     throw new IllegalArgumentException("Error: No puedes registrar el mismo servicio más de una vez en la misma boleta.");
                 }
                 detalle.setServicio(serv);
+                
+                // Cálculo seguro en el backend
+                detalle.setPrecioUnitario(serv.getPrecioServicio());
+                detalle.setSubtotal(serv.getPrecioServicio().multiply(item.getCantidad()));
 
             // B) LÓGICA PARA PRODUCTOS FÍSICOS (Sacos, Farmacia, etc.)
             } else if ("PRODUCTO".equalsIgnoreCase(item.getTipo())) {
                 Producto prod = productoRepository.findById(item.getIdItem())
                         .orElseThrow(() -> new RuntimeException("Producto no encontrado en el catálogo."));
+
+                // 1. VALIDACIÓN DE PRODUCTOS "SUELTOS" vs ENTEROS
+                // Si se vende por 'unidad', rechazamos tajantemente que traiga fracciones (decimales)
+                if ("unidad".equalsIgnoreCase(prod.getTipoUnidad()) && item.getCantidad().remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
+                    throw new IllegalArgumentException("El producto '" + prod.getNombre() + "' no se puede vender fraccionado (solo admite unidades enteras).");
+                }
+
+                // 2. CÁLCULO DE PRECIO PROPORCIONAL
+                // Multiplica la cantidad (entera o decimal) por el valor unitario original. Ej: 0.5kg * 100 = 50.00
+                detalle.setPrecioUnitario(prod.getPrecioVentaActual());
+                detalle.setSubtotal(prod.getPrecioVentaActual().multiply(item.getCantidad()));
 
                 // Validación de seguridad física antes de descontar (Soporta decimales Ej: 0.5kg)
                 if (prod.getStockTotal().compareTo(item.getCantidad()) < 0) {
@@ -135,6 +153,9 @@ public class VentaService {
                 productoRepository.save(prod);
                 
                 detalle.setProducto(prod);
+            } else {
+                // C) PREVENCIÓN DE ERRORES SI SE ENVÍA UN TIPO INVÁLIDO
+                throw new IllegalArgumentException("Tipo de ítem desconocido: '" + item.getTipo() + "'. Solo se permite SERVICIO o PRODUCTO.");
             }
 
             venta.getDetallesVentas().add(detalle);

@@ -77,8 +77,12 @@ public class UsuarioService {
         Usuario usuario = buscarPorId(idUsuario);
         
         // Blindaje: Evitar que el dueño se desactive a sí mismo por error si es el único administrador
-        // CORRECCIÓN: Cambiamos .name() por .getNombreRol()
-        if (!nuevoEstado && usuario.getRole().getNombreRol().equals("ROLE_Administrador") && usuarioRepository.count() <= 1) {
+        // CORRECCIÓN: Contar específicamente los administradores activos, no todos los usuarios del sistema.
+        long adminCount = listarTodos().stream()
+                .filter(u -> u.getRole() != null && "ROLE_Administrador".equals(u.getRole().getNombreRol()) && u.getEstado())
+                .count();
+                
+        if (!nuevoEstado && "ROLE_Administrador".equals(usuario.getRole().getNombreRol()) && adminCount <= 1) {
              throw new IllegalArgumentException("Bloqueo de seguridad: No puedes desactivar al único administrador del sistema.");
         }
         
