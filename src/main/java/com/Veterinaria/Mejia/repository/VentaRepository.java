@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -72,4 +73,36 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
                    "FROM ventas WHERE fecha_emision >= :inicio AND estado = 1 " +
                    "GROUP BY DATE(fecha_emision) ORDER BY DATE(fecha_emision)", nativeQuery = true)
     List<VentasDiaDTO> obtenerVentasPorDia(@Param("inicio") LocalDateTime inicio);
+
+    // =========================================================================
+    // 3. CONSULTAS PARA LOS TOP 10 (Productos y Servicios)
+    // =========================================================================
+
+    /**
+     * Proyección (Interface) para mapear automáticamente las sumas de las consultas.
+     * Spring Data interceptará las columnas 'nombre', 'cantidad' y 'ganancia' y creará el objeto.
+     */
+    public interface TopItemProjection {
+        String getNombre();
+        BigDecimal getCantidad();
+        BigDecimal getGanancia();
+    }
+
+    // TOP Productos Más Vendidos
+    @Query("SELECT d.producto.nombre AS nombre, SUM(d.cantidad) AS cantidad, SUM(d.subtotal) AS ganancia " +
+           "FROM Venta v JOIN v.detallesVentas d " +
+           "WHERE v.fechaEmision >= :inicio AND v.fechaEmision <= :fin AND v.estado = true " +
+           "AND d.producto IS NOT NULL " +
+           "GROUP BY d.producto.id, d.producto.nombre " +
+           "ORDER BY SUM(d.cantidad) DESC")
+    List<TopItemProjection> obtenerTopProductosPorFechaJPQL(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin, Pageable pageable);
+
+    // TOP Servicios Más Solicitados
+    @Query("SELECT d.servicio.nombreServicio AS nombre, SUM(d.cantidad) AS cantidad, SUM(d.subtotal) AS ganancia " +
+           "FROM Venta v JOIN v.detallesVentas d " +
+           "WHERE v.fechaEmision >= :inicio AND v.fechaEmision <= :fin AND v.estado = true " +
+           "AND d.servicio IS NOT NULL " +
+           "GROUP BY d.servicio.id, d.servicio.nombreServicio " +
+           "ORDER BY SUM(d.cantidad) DESC")
+    List<TopItemProjection> obtenerTopServiciosPorFechaJPQL(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin, Pageable pageable);
 }

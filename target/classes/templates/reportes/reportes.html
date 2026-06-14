@@ -24,11 +24,11 @@
                     <p class="text-muted mb-0">Análisis detallado de ventas, inversiones, ganancias y productos top.</p>
                 </div>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-outline-success fw-600 shadow-sm" onclick="window.print()">
-                        <i class="bi bi-file-earmark-excel me-1"></i>Exportar
+                    <button class="btn btn-outline-success fw-600 shadow-sm" onclick="exportarExcel()">
+                        <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
                     </button>
-                    <button class="btn btn-outline-danger fw-600 shadow-sm" onclick="window.print()">
-                        <i class="bi bi-file-earmark-pdf me-1"></i>Imprimir
+                    <button class="btn btn-outline-danger fw-600 shadow-sm" onclick="exportarPDF()">
+                        <i class="bi bi-file-earmark-pdf me-1"></i>Descargar PDF
                     </button>
                 </div>
             </div>
@@ -60,6 +60,9 @@
                     </form>
                 </div>
             </div>
+
+            <!-- Contenedor principal que será capturado en el PDF -->
+            <div id="area-reporte">
 
             <div class="row g-4 mb-4">
                 
@@ -125,13 +128,30 @@
 
             </div>
 
-            <div class="card card-custom mb-4">
-                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                    <span class="fw-600 text-dark"><i class="bi bi-activity text-primary me-2"></i>Curva de Ventas (<span th:text="${filtroTexto}">Rango</span>)</span>
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="card card-custom h-100">
+                        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                            <span class="fw-600 text-dark"><i class="bi bi-activity text-primary me-2"></i>Curva de Ventas (<span th:text="${filtroTexto}">Rango</span>)</span>
+                        </div>
+                        <div class="card-body p-4">
+                            <div style="height: 300px; width: 100%;">
+                                <canvas id="ventasChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body p-4">
-                    <div style="height: 300px; width: 100%;">
-                        <canvas id="ventasChart"></canvas>
+
+                <div class="col-lg-4">
+                    <div class="card card-custom h-100">
+                        <div class="card-header bg-white py-3 border-bottom">
+                            <span class="fw-600 text-dark"><i class="bi bi-pie-chart-fill text-info me-2"></i>Productos vs Servicios</span>
+                        </div>
+                        <div class="card-body p-4 d-flex justify-content-center align-items-center">
+                            <div style="height: 250px; width: 100%;">
+                                <canvas id="comparativaChart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -145,7 +165,7 @@
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
+                                <table id="tabla-productos" class="table table-hover align-middle mb-0">
                                     <thead class="table-light">
                                         <tr>
                                             <th class="ps-4">#</th>
@@ -178,7 +198,7 @@
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
+                                <table id="tabla-servicios" class="table table-hover align-middle mb-0">
                                     <thead class="table-light">
                                         <tr>
                                             <th class="ps-4">#</th>
@@ -206,13 +226,49 @@
 
             </div>
 
+            </div> <!-- Cierre de area-reporte -->
+
         </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Librerías para Exportación PDF y Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script th:inline="javascript">
+        // ==========================================
+        // LÓGICA DE EXPORTACIÓN (CLIENTE)
+        // ==========================================
+        function exportarPDF() {
+            const elemento = document.getElementById('area-reporte');
+            const opciones = {
+                margin:       0.5,
+                filename:     'Reporte_Financiero_VetMejia.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+            // Genera y descarga el PDF asíncronamente
+            html2pdf().set(opciones).from(elemento).save();
+        }
+
+        function exportarExcel() {
+            const wb = XLSX.utils.book_new();
+            
+            const tbProductos = document.getElementById('tabla-productos');
+            const wsProductos = XLSX.utils.table_to_sheet(tbProductos);
+            XLSX.utils.book_append_sheet(wb, wsProductos, "Top Productos");
+            
+            const tbServicios = document.getElementById('tabla-servicios');
+            const wsServicios = XLSX.utils.table_to_sheet(tbServicios);
+            XLSX.utils.book_append_sheet(wb, wsServicios, "Top Servicios");
+            
+            XLSX.writeFile(wb, "Reporte_Top_Ventas.xlsx");
+        }
+
         // Extraemos los datos enviados desde Java mediante Thymeleaf
         const etiquetasGrafico = /*[[${graficoLabels}]]*/ ['Lunes', 'Martes', 'Miércoles'];
         const datosVentasGrafico = /*[[${graficoDatosVentas}]]*/ [0, 0, 0];
@@ -253,6 +309,33 @@
                 },
                 scales: {
                     y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // ==========================================
+        // GRÁFICO CIRCULAR (PRODUCTOS VS SERVICIOS)
+        // ==========================================
+        const totalProd = /*[[${totalProductosVendidos != null ? totalProductosVendidos : 0}]]*/ 0;
+        const totalServ = /*[[${totalServiciosVendidos != null ? totalServiciosVendidos : 0}]]*/ 0;
+
+        const ctxPie = document.getElementById('comparativaChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'doughnut', // doughnut se ve más moderno y limpio que 'pie'
+            data: {
+                labels: ['Productos', 'Servicios'],
+                datasets: [{
+                    data: [totalProd, totalServ],
+                    backgroundColor: ['#f59e0b', '#0dcaf0'], // Naranja/Amarillo y Celeste (Colores Bootstrap)
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
                 }
             }
         });
