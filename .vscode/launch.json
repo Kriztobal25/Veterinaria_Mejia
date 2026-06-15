@@ -1,0 +1,23 @@
+{
+    // Use IntelliSense para saber los atributos posibles.
+    // Mantenga el puntero para ver las descripciones de los existentes atributos.
+    // Para más información, visite: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-MejiaApplication<Mejia>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.Veterinaria.Mejia.MejiaApplication",
+            "projectName": "Mejia",
+            "args": "",
+            "env": {
+                "MYSQL_URL": "jdbc:mysql://root:fcpYqadONaqJYxUGXMUjkJuOgxdJgrZm@mysql.railway.internal:3306/railway",
+                "MYSQL_USER": "root",
+                "MYSQL_PASSWORD": "fcpYqadONaqJYxUGXMUjkJuOgxdJgrZm"
+            }
+        }
+    ]
+}
