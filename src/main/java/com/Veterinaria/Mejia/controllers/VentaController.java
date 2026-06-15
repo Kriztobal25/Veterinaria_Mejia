@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.Veterinaria.Mejia.dto.ItemCarritoDTO;
 import com.Veterinaria.Mejia.dto.VentaRequestDTO;
+import com.Veterinaria.Mejia.models.Usuario;
 import com.Veterinaria.Mejia.models.Venta;
 import com.Veterinaria.Mejia.services.CategoriaService;
 import com.Veterinaria.Mejia.services.ClienteService;
@@ -41,7 +43,7 @@ public class VentaController {
     // ==========================================
     @GetMapping
     public String historialVentas(Model model) {
-        model.addAttribute("ventas", ventaService.listarTodas()); 
+        model.addAttribute("ventas", ventaService.listarUltimas10Ventas()); 
         return "ventas/historial-ventas";
     }
 
@@ -53,7 +55,9 @@ public class VentaController {
         Venta nuevaVenta = new Venta();
         
         // Hardcodeo temporal del ID de usuario encargado de la caja
-        nuevaVenta.setUsuarioId(1); 
+        Usuario cajero = new Usuario();
+        cajero.setId(1);
+        nuevaVenta.setUsuario(cajero); 
         
         // Inicializa la lista vacía para el carrito
         nuevaVenta.setDetallesVentas(new ArrayList<>());
@@ -136,6 +140,20 @@ public class VentaController {
         Venta ventaReal = ventaService.buscarPorId(id);
         model.addAttribute("venta", ventaReal);
         return "ventas/comprobante-ticket";
+    }
+
+    // ==========================================
+    // 5. ANULAR VENTA
+    // ==========================================
+    @GetMapping("/anular/{id}")
+    public String anularVenta(@PathVariable("id") Integer id, RedirectAttributes redirectAttrs) {
+        try {
+            ventaService.anularVenta(id);
+            redirectAttrs.addFlashAttribute("successMsg", "La venta ha sido anulada y el stock fue devuelto correctamente al inventario.");
+        } catch (RuntimeException e) {
+            redirectAttrs.addFlashAttribute("errorMsg", e.getMessage());
+        }
+        return "redirect:/ventas";
     }
 
     /**

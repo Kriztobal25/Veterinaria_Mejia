@@ -9,8 +9,14 @@
             <h5 class="mb-0 fw-bold text-secondary d-none d-md-block">Sistema Integral VetMejía</h5>
         </div>
 
-        <div class="header-right" th:if="${#authentication != null and #authentication.name != 'anonymousUser'}">
+        <div class="header-right d-flex align-items-center" th:if="${#authentication != null and #authentication.name != 'anonymousUser'}">
             
+            <!-- Contador de Sesión -->
+            <div class="d-flex align-items-center me-3 px-3 py-1 rounded bg-light border" title="Tiempo restante de sesión">
+                <i class="bi bi-clock-history text-secondary me-2"></i>
+                <span class="fw-bold text-secondary font-monospace" id="sessionTimer" style="font-size: 14px;">30:00</span>
+            </div>
+
             <div class="dropdown">
                 <div class="d-flex align-items-center gap-2 p-1 pe-3 rounded-pill" 
                      style="background: #f8fafc; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s;" 

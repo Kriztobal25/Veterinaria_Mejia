@@ -36,6 +36,11 @@ public class UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
     }
 
+    // VERIFICAR SI EXISTE NOMBRE DE USUARIO (DNI) PARA VALIDACIÓN ASÍNCRONA (AJAX)
+    public boolean existeNombreUsuario(String nombreUsuario) {
+        return usuarioRepository.findByNombreUsuario(nombreUsuario).isPresent();
+    }
+
     // REGISTRO DE NUEVO USUARIO
     @Transactional
     public Usuario guardarUsuarioNuevo(Usuario usuario) {
@@ -59,7 +64,12 @@ public class UsuarioService {
         // 4. Encriptar contraseña principal
         usuario.setContrasena(passwordEncoder.encode(contrasenaPlana));
 
-        // 5. Encriptar la respuesta secreta (Pasamos a minúsculas para evitar errores de tipeo al recuperar)
+        // 5. Validar que se haya seleccionado una pregunta secreta
+        if (usuario.getPreguntaSecreta() == null || usuario.getPreguntaSecreta().trim().isEmpty()) {
+            throw new IllegalArgumentException("La pregunta secreta es obligatoria para el registro.");
+        }
+
+        // 6. Encriptar la respuesta secreta (Pasamos a minúsculas para evitar errores de tipeo al recuperar)
         if (usuario.getRespuestaSecreta() != null && !usuario.getRespuestaSecreta().trim().isEmpty()) {
             String respuestaNormalizada = usuario.getRespuestaSecreta().trim().toLowerCase();
             usuario.setRespuestaSecreta(passwordEncoder.encode(respuestaNormalizada));

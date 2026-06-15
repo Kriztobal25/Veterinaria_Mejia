@@ -18,6 +18,7 @@ import com.Veterinaria.Mejia.models.Cliente;
 import com.Veterinaria.Mejia.models.DetalleVenta;
 import com.Veterinaria.Mejia.models.Producto;
 import com.Veterinaria.Mejia.models.Servicio;
+import com.Veterinaria.Mejia.models.Usuario;
 import com.Veterinaria.Mejia.models.Venta;
 import com.Veterinaria.Mejia.repository.ClienteRepository;
 import com.Veterinaria.Mejia.repository.ProductoRepository;
@@ -57,7 +58,9 @@ public class VentaService {
         venta.setDetallesVentas(new ArrayList<>());
 
         // 🔥 CORRECCIÓN: Le asignamos el ID del cajero (obligatorio para la BD)
-        venta.setUsuarioId(1);
+        Usuario cajero = new Usuario();
+        cajero.setId(1);
+        venta.setUsuario(cajero);
 
         // =====================================================================
         // 1. LÓGICA INTELIGENTE DEL CLIENTE 
@@ -69,18 +72,18 @@ public class VentaService {
             Optional<Cliente> clienteExistente = clienteRepository.findByDniJPQL(dniIngresado); 
             
             if (clienteExistente.isPresent()) {
-                venta.setClienteId(clienteExistente.get().getId()); 
+                venta.setCliente(clienteExistente.get()); 
             } else {
                 Cliente nuevoCliente = new Cliente();
                 nuevoCliente.setDni(dniIngresado);
                 nuevoCliente.setNombre(nombreIngresado != null && !nombreIngresado.trim().isEmpty() ? nombreIngresado : "Cliente sin nombre");
                 
                 Cliente clienteGuardado = clienteRepository.save(nuevoCliente);
-                venta.setClienteId(clienteGuardado.getId()); 
+                venta.setCliente(clienteGuardado); 
             }
         } else {
             // Público General
-            venta.setClienteId(null); 
+            venta.setCliente(null); 
         }
 
         // =====================================================================
@@ -175,6 +178,11 @@ public class VentaService {
 
     public List<Venta> listarTodas() {
         return ventaRepository.findAll();
+    }
+    
+    // Obtener solo las últimas 10 ventas
+    public List<Venta> listarUltimas10Ventas() {
+        return ventaRepository.findTop10ByOrderByFechaEmisionDesc();
     }
     
     @Transactional

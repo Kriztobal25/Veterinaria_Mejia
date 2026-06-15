@@ -11,6 +11,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMin;
@@ -36,12 +38,14 @@ public class Venta {
     private Integer id;
 
     @NotNull(message = "El usuario (cajero) es obligatorio para registrar la venta.")
-    @Column(name = "usuario_id", nullable = false)
-    private Integer usuarioId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 
     // Se mantiene nullable para permitir las compras rápidas sin registrar cliente (Público General)
-    @Column(name = "cliente_id")
-    private Integer clienteId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id")
+    private Cliente cliente;
 
     @Column(name = "fecha_emision", insertable = false, updatable = false)
     private LocalDateTime fechaEmision;
