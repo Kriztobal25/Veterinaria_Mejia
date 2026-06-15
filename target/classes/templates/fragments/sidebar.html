@@ -147,6 +147,11 @@
         }
         </style>
 
+    <!-- Botón de Hamburguesa -->
+    <button id="sidebarToggleBtn" class="btn-toggle-sidebar" aria-label="Alternar Menú" data-bs-toggle="tooltip" data-bs-placement="right" title="Ocultar Menú">
+        <i class="bi bi-list fs-4"></i>
+    </button>
+
         <div class="sidebar-brand">
             <i class="bi bi-heart-pulse-fill"></i>
             <h4>VetMejía</h4>
@@ -224,6 +229,39 @@
                 </a>
             </li>
         </ul>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const toggleBtn = document.getElementById('sidebarToggleBtn');
+            const body = document.body;
+            
+            // Inicializar el Tooltip de Bootstrap
+            const bsTooltip = new bootstrap.Tooltip(toggleBtn);
+            
+            // Función auxiliar para actualizar el texto del tooltip en Bootstrap
+            const actualizarTooltip = (estaOculto) => {
+                toggleBtn.setAttribute('data-bs-original-title', estaOculto ? 'Mostrar Menú' : 'Ocultar Menú');
+            };
+            
+            // 1. Recuperar la preferencia del usuario en localStorage
+            const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+            if (isCollapsed) {
+                body.classList.add('sidebar-collapsed');
+            }
+            actualizarTooltip(isCollapsed);
+
+            // 2. Alternar estado al hacer clic
+            toggleBtn.addEventListener('click', function() {
+                const estaOcultoAhora = body.classList.toggle('sidebar-collapsed');
+                localStorage.setItem('sidebar-collapsed', estaOcultoAhora);
+                actualizarTooltip(estaOcultoAhora);
+                
+                // Ocultar el tooltip momentáneamente al hacer clic para que no se quede "pegado"
+                // de forma molesta mientras ocurre la animación de ocultar/mostrar
+                bsTooltip.hide();
+            });
+        });
+    </script>
     </nav>
 
 </body>

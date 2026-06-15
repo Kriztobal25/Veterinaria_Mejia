@@ -117,15 +117,9 @@
                                  th:data-id="${p.id}" th:data-nombre="${p.nombre}" th:data-precio="${p.precioVentaActual}" 
                                  th:data-stock="${p.stockTotal}" th:data-categoria="${p.categoria.nombre}" 
                                  th:data-especie="${p.especie != null ? p.especie.nombreEspecie : 'General'}"
-                                 th:data-unidad="${p.tipoUnidad}"
                                  onclick="agregarAlCarrito(this, 'producto')">
                                 <div>
-                                    <div class="fw-bold text-dark mb-1 d-flex align-items-center flex-wrap gap-2">
-                                        <span th:text="${p.nombre}"></span>
-                                        <span th:if="${p.tipoUnidad != 'unidad'}" class="badge bg-warning bg-opacity-25 text-dark border border-warning border-opacity-50 badge-tipo">
-                                            <i class="bi bi-pie-chart-fill me-1"></i>Suelto
-                                        </span>
-                                    </div>
+                                    <div class="fw-bold text-dark mb-1" th:text="${p.nombre}"></div>
                                     <div class="text-muted small">
                                         <span class="badge bg-light text-dark border badge-tipo me-1">P</span>
                                         Stock: <span th:text="${p.stockTotal}"></span> u/kg
@@ -241,12 +235,10 @@
                 const iEsp = item.getAttribute("data-especie").toLowerCase();
                 const iCat = item.getAttribute("data-categoria").toLowerCase();
                 const iNom = item.getAttribute("data-nombre").toLowerCase();
-                const iUni = (item.getAttribute("data-unidad") || "").toLowerCase();
                 
                 const coincideEspecie = (esp === "" || iEsp.includes(esp) || iCat === "servicio");
                 const coincideCategoria = (cat === "" || iCat.includes(cat));
-                // Validar coincidencia en nombre o en el tipo de unidad
-                const coincideNombre = (nom === "" || iNom.includes(nom) || iUni.includes(nom));
+                const coincideNombre = (nom === "" || iNom.includes(nom));
 
                 if (coincideEspecie && coincideCategoria && coincideNombre) {
                     item.style.setProperty("display", "flex", "important");
@@ -262,7 +254,6 @@
             const nombre = el.getAttribute("data-nombre");
             const precio = parseFloat(el.getAttribute("data-precio"));
             const stock = parseFloat(el.getAttribute("data-stock"));
-            const unidad = el.getAttribute("data-unidad") || "unidad"; // Por defecto "unidad" para servicios
             const tbody = document.getElementById("cuerpo-carrito");
             
             let duplicado = false;
@@ -278,8 +269,8 @@
                     const cantidadActual = parseFloat(inputCant.value);
                     
                     if (cantidadActual < stock) {
-                        // Aumentamos en 1, conservando decimales solo si es producto fraccionado
-                        inputCant.value = (cantidadActual + 1).toFixed((tipo === 'producto' && unidad !== 'unidad') ? 2 : 0);
+                        // Aumentamos en 1 si es servicio, o dejamos escribir si es producto a granel
+                        inputCant.value = (cantidadActual + 1).toFixed(tipo === 'producto' ? 2 : 0);
                     } else if (tipo === 'producto') {
                         alert("Has alcanzado el límite de stock de este producto.");
                     }
@@ -295,22 +286,18 @@
             // Crear nueva fila con nombres simples
             const tr = document.createElement("tr");
             const labelTipo = tipo === 'producto' ? '<span class="badge bg-light text-dark border me-1">P</span>' : '<span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 me-1">S</span>';
-            
-            const stepYMin = (tipo === 'producto' && unidad !== 'unidad') ? '0.01' : '1';
-            const esFraccionado = (tipo === 'producto' && unidad !== 'unidad');
-            const badgeFraccionado = esFraccionado ? `<div class="mt-1"><span class="badge bg-warning bg-opacity-25 text-dark border border-warning border-opacity-50" style="font-size: 0.65rem;"><i class="bi bi-pie-chart-fill me-1"></i>Venta Fraccionada (${unidad})</span></div>` : '';
+            const stepYMin = tipo === 'producto' ? '0.01' : '1';
 
             tr.innerHTML = `
                 <td>
-                    <div class="fw-bold text-dark small">
-                        <div class="d-flex align-items-center">${labelTipo} <span>${nombre}</span></div>
-                        ${badgeFraccionado}
+                    <div class="fw-bold text-dark small d-flex align-items-center">
+                        ${labelTipo} <span>${nombre}</span>
                     </div>
                     <input type="hidden" name="itemTipo" value="${valTipo}">
                     <input type="hidden" name="itemId" value="${id}">
                 </td>
                 <td>
-                    <input type="number" name="itemCantidad" value="1" step="${stepYMin}" min="${stepYMin}" max="${stock}" onchange="recalcular()" class="form-control form-control-sm text-center fw-bold cantidad-input mx-auto" style="max-width: 85px; border-radius: 8px;">
+                    <input type="number" name="itemCantidad" value="1" step="${stepYMin}" min="${stepYMin}" max="${stock}" onchange="recalcular()" class="form-control form-control-sm text-center fw-bold cantidad-input">
                 </td>
                 <td class="text-end text-muted small pe-3">S/. ${precio.toFixed(2)}
                     <input type="hidden" name="itemPrecio" value="${precio}">
