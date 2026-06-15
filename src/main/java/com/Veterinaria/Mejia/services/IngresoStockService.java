@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,13 @@ public class IngresoStockService {
     public List<IngresoStock> listarTodos() {
         // Retorna todas las cabeceras de compras a proveedores
         return ingresoStockRepository.findAll();
+    }
+
+    // ==========================================
+    // 1.5 LISTAR HISTORIAL PAGINADO
+    // ==========================================
+    public Page<IngresoStock> listarHistorialPaginado(Pageable pageable) {
+        return ingresoStockRepository.findAll(pageable);
     }
 
     // ==========================================

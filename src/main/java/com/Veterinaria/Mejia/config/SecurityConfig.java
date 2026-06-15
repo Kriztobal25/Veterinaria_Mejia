@@ -25,7 +25,7 @@ public class SecurityConfig {
             // 1. CONTROL ESTRICTO DE ACCESOS POR AUTORIDAD EXACTA
             .authorizeHttpRequests(auth -> auth
                 // Rutas públicas y recursos estáticos
-                .requestMatchers("/login", "/recuperar-password", "/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/login", "/recuperar-password/**", "/css/**", "/js/**", "/images/**").permitAll()
                 
                 // Módulos exclusivos del Dueño / Administrador
                 .requestMatchers(

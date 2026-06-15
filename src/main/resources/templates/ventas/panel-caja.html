@@ -125,9 +125,9 @@
                                     <div class="fw-bold text-dark mb-1" th:text="${p.nombre}"></div>
                                     <div class="text-muted small">
                                         <span class="badge bg-light text-dark border badge-tipo me-1">P</span>
-                                            Stock: <span th:text="${p.stockCerrado != null ? p.stockCerrado : 0}"></span> enteros
+                                            Stock: <span th:text="${p.stockCerrado != null ? p.stockCerrado : 0}"></span> sacos
                                             <span th:if="${p.permiteFraccionamiento != null and p.permiteFraccionamiento}" class="ms-1 text-primary fw-semibold">
-                                                (Abierto: <span th:text="${p.stockAbierto != null ? p.stockAbierto : 0}"></span> sueltos)
+                                                (Abierto: <span th:text="${p.stockAbierto != null ? p.stockAbierto : 0}"></span> u/kg)
                                             </span>
                                     </div>
                                 </div>

@@ -41,6 +41,11 @@ public class UsuarioService {
         return usuarioRepository.findByNombreUsuario(nombreUsuario).isPresent();
     }
 
+    // Método para el flujo de recuperación de contraseña, no lanza excepción si no lo encuentra
+    public Optional<Usuario> buscarUsuarioParaRecuperacion(String nombreUsuario) {
+        return usuarioRepository.findByNombreUsuario(nombreUsuario);
+    }
+
     // REGISTRO DE NUEVO USUARIO
     @Transactional
     public Usuario guardarUsuarioNuevo(Usuario usuario) {

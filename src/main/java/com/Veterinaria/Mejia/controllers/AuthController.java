@@ -53,11 +53,32 @@ public class AuthController {
 
     // Muestra el formulario HTML para recuperar la clave
     @GetMapping("/recuperar-password")
-    public String mostrarFormularioRecuperacion() {
+    public String mostrarFormularioRecuperacion(Model model) {
+        // Paso 1: Mostrar solo el campo de usuario
+        model.addAttribute("paso", 1);
         return "auth/recuperar-password";
     }
 
-    // Atrapa los datos del formulario cuando el usuario le da a "Guardar nueva clave"
+    // Busca al usuario y, si existe, muestra su pregunta secreta
+    @PostMapping("/recuperar-password/buscar")
+    public String buscarUsuarioParaRecuperacion(@RequestParam("nombreUsuario") String nombreUsuario, 
+                                                Model model, 
+                                                RedirectAttributes redirectAttributes) {
+        return usuarioService.buscarUsuarioParaRecuperacion(nombreUsuario)
+            .map(usuario -> {
+                // Paso 2: Mostrar la pregunta y los campos para la nueva clave
+                model.addAttribute("paso", 2);
+                model.addAttribute("nombreUsuario", usuario.getNombreUsuario());
+                model.addAttribute("preguntaSecreta", usuario.getPreguntaSecreta());
+                return "auth/recuperar-password";
+            })
+            .orElseGet(() -> {
+                redirectAttributes.addFlashAttribute("errorMsg", "El nombre de usuario ingresado no existe.");
+                return "redirect:/recuperar-password";
+            });
+    }
+
+    // Procesa el cambio de contraseña final
     @PostMapping("/recuperar-password")
     public String procesarRecuperacion(@RequestParam("nombreUsuario") String nombreUsuario,
                                        @RequestParam("respuestaSecreta") String respuestaSecreta,
@@ -65,19 +86,21 @@ public class AuthController {
                                        RedirectAttributes redirectAttributes,
                                        Model model) {
         try {
-            // Llamamos a nuestro motor lógico
             usuarioService.recuperarContrasenaPorPreguntaSecreta(nombreUsuario, respuestaSecreta, nuevaContrasena);
             
-            // Si no hay errores, redirigimos al login enviando la bandera de éxito por URL (?success=true)
             redirectAttributes.addAttribute("success", "true");
             return "redirect:/login";
             
         } catch (RuntimeException e) { 
-            // Si la respuesta es incorrecta o la clave no cumple las reglas, devolvemos el error a la vista
+            // Si hay un error (respuesta incorrecta, clave débil, etc.), volvemos al paso 2
             model.addAttribute("errorMsg", e.getMessage());
             
-            // Devolvemos el usuario ingresado para evitar que lo digite de nuevo
-            model.addAttribute("nombreUsuarioDigitado", nombreUsuario); 
+            // Re-poblamos los datos para que el usuario no pierda el contexto
+            usuarioService.buscarUsuarioParaRecuperacion(nombreUsuario).ifPresent(usuario -> {
+                model.addAttribute("paso", 2);
+                model.addAttribute("nombreUsuario", usuario.getNombreUsuario());
+                model.addAttribute("preguntaSecreta", usuario.getPreguntaSecreta());
+            });
             
             return "auth/recuperar-password";
         }

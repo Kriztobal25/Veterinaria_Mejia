@@ -43,6 +43,18 @@
             <div class="card card-custom">
                 <div class="card-body p-0">
                     
+                    <!-- Selector de tamaño de página -->
+                    <div class="d-flex justify-content-end p-3 border-bottom">
+                        <form th:action="@{/almacen/ingresos}" method="GET" class="d-flex align-items-center gap-2">
+                            <label for="size" class="form-label text-muted small mb-0">Registros por página:</label>
+                            <select name="size" id="size" class="form-select form-select-sm" style="width: 80px;" onchange="this.form.submit()">
+                                <option value="10" th:selected="${ingresosPage.size == 10}">10</option>
+                                <option value="25" th:selected="${ingresosPage.size == 25}">25</option>
+                                <option value="50" th:selected="${ingresosPage.size == 50}">50</option>
+                            </select>
+                        </form>
+                    </div>
+
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
@@ -124,6 +136,32 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Controles de Paginación -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mt-3 p-3 bg-light border-top" th:if="${ingresosPage != null and ingresosPage.totalPages > 1}">
+                        <span class="text-muted small mb-3 mb-md-0">
+                            Mostrando página <strong th:text="${ingresosPage.number + 1}"></strong> de <strong th:text="${ingresosPage.totalPages}"></strong>
+                            (<span th:text="${ingresosPage.totalElements}"></span> registros en total)
+                        </span>
+                        <nav aria-label="Navegación de historial">
+                            <ul class="pagination pagination-sm mb-0">
+                                <li class="page-item" th:classappend="${ingresosPage.first} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/almacen/ingresos(page=${ingresosPage.number - 1}, size=${ingresosPage.size})}">Anterior</a>
+                                </li>
+                                
+                                <!-- Mostrará solo 5 páginas alrededor de la actual para no saturar la vista -->
+                                <li class="page-item" th:each="i : ${#numbers.sequence(0, ingresosPage.totalPages - 1)}"
+                                    th:if="${i >= (ingresosPage.number - 2) and i <= (ingresosPage.number + 2)}"
+                                    th:classappend="${i == ingresosPage.number} ? 'active'">
+                                    <a class="page-link" th:href="@{/almacen/ingresos(page=${i}, size=${ingresosPage.size})}" th:text="${i + 1}">1</a>
+                                </li>
+                                
+                                <li class="page-item" th:classappend="${ingresosPage.last} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/almacen/ingresos(page=${ingresosPage.number + 1}, size=${ingresosPage.size})}">Siguiente</a>
+                                </li>
+                            </ul>
+                        </nav>
                     </div>
                     
                 </div>
