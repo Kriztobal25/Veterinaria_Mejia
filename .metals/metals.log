@@ -11340,3 +11340,34 @@ WARNING: Unmatched cancel notification for request id 311
 2026.06.14 02:59:57 INFO  Memory monitor started
 2026.06.14 03:00:04 WARN  Using H2 2.4.240 which is newer than the version Flyway has been verified with. The latest verified version of H2 is 2.3.232.
 2026.06.14 03:00:05 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\MejiaApplication.java. Using fallback presentation compiler.
+2026.06.14 03:06:56 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\MejiaApplication.java. Using fallback presentation compiler.
+2026.06.14 03:06:56 WARN  no build target for: C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\MejiaApplication.java
+2026.06.14 03:06:58 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\MejiaApplication.java. Using fallback presentation compiler.
+2026.06.14 13:56:37 INFO  Started: Metals version 1.6.7+41-335bd931-SNAPSHOT in folders 'C:\Users\Antony\Documents\Proyecto_Mejia\Mejia' for client Visual Studio Code 1.124.2.
+2026.06.14 13:56:37 INFO  time: initialize in 0.14s
+2026.06.14 13:56:37 INFO  Memory monitor started
+2026.06.14 13:56:50 WARN  Using H2 2.4.240 which is newer than the version Flyway has been verified with. The latest verified version of H2 is 2.3.232.
+2026.06.14 13:56:52 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\MejiaApplication.java. Using fallback presentation compiler.
+2026.06.14 13:56:57 WARN  no build target for: C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\MejiaApplication.java
+2026.06.14 13:56:58 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\MejiaApplication.java. Using fallback presentation compiler.
+2026.06.14 13:57:08 INFO  restarted 1 presentation compiler
+2026.06.14 13:57:15 INFO  time: code lens generation in 17s
+jun. 14, 2026 1:57:51 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 11
+2026.06.14 13:57:51 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\MejiaApplication.java. Using fallback presentation compiler.
+2026.06.14 13:58:05 WARN  no build target for: C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\MejiaApplication.java
+2026.06.14 13:58:05 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\MejiaApplication.java. Using fallback presentation compiler.
+2026.06.14 13:58:05 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\MejiaApplication.java. Using fallback presentation compiler.
+jun. 14, 2026 1:59:06 P. M. org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace
+jun. 14, 2026 1:59:08 P. M. org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace
+jun. 14, 2026 1:59:09 P. M. org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace
+jun. 14, 2026 1:59:09 P. M. org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace
+jun. 14, 2026 1:59:09 P. M. org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace
+2026.06.14 14:07:06 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\MejiaApplication.java. Using fallback presentation compiler.
+jun. 14, 2026 3:08:13 P. M. org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace
