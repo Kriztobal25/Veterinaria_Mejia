@@ -130,29 +130,49 @@ public class VentaService {
                 detalle.setPrecioUnitario(serv.getPrecioServicio());
                 detalle.setSubtotal(serv.getPrecioServicio().multiply(item.getCantidad()));
 
-            // B) LÓGICA PARA PRODUCTOS FÍSICOS (Sacos, Farmacia, etc.)
-            } else if ("PRODUCTO".equalsIgnoreCase(item.getTipo())) {
+            // B) LÓGICA PARA PRODUCTOS FÍSICOS (ENTERO O FRACCIONADO)
+            } else if ("PRODUCTO_ENTERO".equalsIgnoreCase(item.getTipo()) || "PRODUCTO_FRACCIONADO".equalsIgnoreCase(item.getTipo())) {
                 Producto prod = productoRepository.findById(item.getIdItem())
                         .orElseThrow(() -> new RuntimeException("Producto no encontrado en el catálogo."));
 
-                // 1. VALIDACIÓN DE PRODUCTOS "SUELTOS" vs ENTEROS
-                // Si se vende por 'unidad', rechazamos tajantemente que traiga fracciones (decimales)
-                if ("unidad".equalsIgnoreCase(prod.getTipoUnidad()) && item.getCantidad().remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
-                    throw new IllegalArgumentException("El producto '" + prod.getNombre() + "' no se puede vender fraccionado (solo admite unidades enteras).");
+                boolean esFraccionado = "PRODUCTO_FRACCIONADO".equalsIgnoreCase(item.getTipo());
+                
+                if (esFraccionado) {
+                    if (prod.getPermiteFraccionamiento() == null || !prod.getPermiteFraccionamiento()) {
+                        throw new IllegalArgumentException("El producto '" + prod.getNombre() + "' no permite venta fraccionada.");
+                    }
+                    
+                    BigDecimal cantidadRequerida = item.getCantidad();
+                    
+                    // Si lo requerido es mayor al stock abierto, rompemos sacos cerrados hasta que alcance
+                    while (prod.getStockAbierto().compareTo(cantidadRequerida) < 0) {
+                        if (prod.getStockCerrado() == null || prod.getStockCerrado() <= 0) {
+                            throw new RuntimeException("Stock insuficiente para venta suelta de: " + prod.getNombre() + ". No hay envases cerrados disponibles para abrir.");
+                        }
+                        prod.setStockCerrado(prod.getStockCerrado() - 1); // Restamos 1 envase sellado
+                        prod.setStockAbierto(prod.getStockAbierto().add(prod.getContenidoPorEnvase())); // Volcamos el contenido a granel
+                    }
+                    
+                    prod.setStockAbierto(prod.getStockAbierto().subtract(cantidadRequerida));
+                    detalle.setPrecioUnitario(prod.getPrecioPorFraccion());
+                    detalle.setSubtotal(prod.getPrecioPorFraccion().multiply(item.getCantidad()));
+                    
+                } else {
+                    // Lógica para productos en modo ENTERO
+                    if (item.getCantidad().remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
+                        throw new IllegalArgumentException("El producto '" + prod.getNombre() + "' en modo entero no se puede vender con decimales.");
+                    }
+                    
+                    int cantidadEntera = item.getCantidad().intValue();
+                    if (prod.getStockCerrado() == null || prod.getStockCerrado() < cantidadEntera) {
+                        throw new RuntimeException("Stock de envases cerrados insuficiente para: " + prod.getNombre());
+                    }
+                    
+                    prod.setStockCerrado(prod.getStockCerrado() - cantidadEntera);
+                    detalle.setPrecioUnitario(prod.getPrecioVentaActual());
+                    detalle.setSubtotal(prod.getPrecioVentaActual().multiply(item.getCantidad()));
                 }
-
-                // 2. CÁLCULO DE PRECIO PROPORCIONAL
-                // Multiplica la cantidad (entera o decimal) por el valor unitario original. Ej: 0.5kg * 100 = 50.00
-                detalle.setPrecioUnitario(prod.getPrecioVentaActual());
-                detalle.setSubtotal(prod.getPrecioVentaActual().multiply(item.getCantidad()));
-
-                // Validación de seguridad física antes de descontar (Soporta decimales Ej: 0.5kg)
-                if (prod.getStockTotal().compareTo(item.getCantidad()) < 0) {
-                    throw new RuntimeException("Stock insuficiente para el producto: " + prod.getNombre());
-                }
-
-                // Restamos la cantidad exacta vendida
-                prod.setStockTotal(prod.getStockTotal().subtract(item.getCantidad()));
+                
                 productoRepository.save(prod);
                 
                 detalle.setProducto(prod);

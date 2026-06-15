@@ -114,19 +114,30 @@
                             
                             <div class="item-resultado" th:each="p : ${productos}" 
                                  th:if="${p.estado}"
-                                 th:data-id="${p.id}" th:data-nombre="${p.nombre}" th:data-precio="${p.precioVentaActual}" 
-                                 th:data-stock="${p.stockTotal}" th:data-categoria="${p.categoria.nombre}" 
-                                 th:data-especie="${p.especie != null ? p.especie.nombreEspecie : 'General'}"
-                                 onclick="agregarAlCarrito(this, 'producto')">
+                                     th:data-id="${p.id}" th:data-nombre="${p.nombre}" 
+                                     th:data-precio="${p.precioVentaActual}" 
+                                     th:data-precio-fraccion="${p.precioPorFraccion != null ? p.precioPorFraccion : 0}"
+                                     th:data-stock-cerrado="${p.stockCerrado != null ? p.stockCerrado : 0}" 
+                                     th:data-permite-fraccion="${p.permiteFraccionamiento != null ? p.permiteFraccionamiento : false}"
+                                     th:data-categoria="${p.categoria.nombre}" 
+                                     th:data-especie="${p.especie != null ? p.especie.nombreEspecie : 'General'}">
                                 <div>
                                     <div class="fw-bold text-dark mb-1" th:text="${p.nombre}"></div>
                                     <div class="text-muted small">
                                         <span class="badge bg-light text-dark border badge-tipo me-1">P</span>
-                                        Stock: <span th:text="${p.stockTotal}"></span> u/kg
+                                            Stock: <span th:text="${p.stockCerrado != null ? p.stockCerrado : 0}"></span> enteros
+                                            <span th:if="${p.permiteFraccionamiento != null and p.permiteFraccionamiento}" class="ms-1 text-primary fw-semibold">
+                                                (Abierto: <span th:text="${p.stockAbierto != null ? p.stockAbierto : 0}"></span> sueltos)
+                                            </span>
                                     </div>
                                 </div>
-                                <div class="text-end">
-                                    <span class="fw-bold text-success">S/. <span th:text="${#numbers.formatDecimal(p.precioVentaActual, 1, 'COMMA', 2, 'POINT')}"></span></span>
+                                    <div class="text-end d-flex flex-column gap-2">
+                                        <button type="button" class="btn btn-sm btn-success py-0 px-2 fw-bold" onclick="agregarAlCarrito(this.closest('.item-resultado'), 'producto_entero')">
+                                            + Entero (S/. <span th:text="${#numbers.formatDecimal(p.precioVentaActual, 1, 'COMMA', 2, 'POINT')}"></span>)
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-primary py-0 px-2 fw-bold" th:if="${p.permiteFraccionamiento != null and p.permiteFraccionamiento}" onclick="agregarAlCarrito(this.closest('.item-resultado'), 'producto_fraccionado')">
+                                            + Suelto (S/. <span th:text="${#numbers.formatDecimal(p.precioPorFraccion, 1, 'COMMA', 2, 'POINT')}"></span>)
+                                        </button>
                                 </div>
                             </div>
                             
@@ -251,13 +262,29 @@
         // AGREGAR AL CARRITO
         function agregarAlCarrito(el, tipo) {
             const id = el.getAttribute("data-id");
-            const nombre = el.getAttribute("data-nombre");
-            const precio = parseFloat(el.getAttribute("data-precio"));
-            const stock = parseFloat(el.getAttribute("data-stock"));
+            let nombre = el.getAttribute("data-nombre");
+            let precio = parseFloat(el.getAttribute("data-precio"));
+            let stock = parseFloat(el.getAttribute("data-stock-cerrado") || "9999");
             const tbody = document.getElementById("cuerpo-carrito");
             
             let duplicado = false;
-            const valTipo = tipo === 'producto' ? 'PRODUCTO' : 'SERVICIO';
+            let valTipo = 'SERVICIO';
+            let labelTipo = '<span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 me-1">S</span>';
+            let stepYMin = '1';
+            
+            if (tipo === 'producto_entero') {
+                valTipo = 'PRODUCTO_ENTERO';
+                labelTipo = '<span class="badge bg-light text-dark border me-1">P</span>';
+                stepYMin = '1';
+                nombre += ' <small class="text-muted">(Entero)</small>';
+            } else if (tipo === 'producto_fraccionado') {
+                valTipo = 'PRODUCTO_FRACCIONADO';
+                labelTipo = '<span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 me-1">F</span>';
+                precio = parseFloat(el.getAttribute("data-precio-fraccion"));
+                stock = 9999; // Stock controlado en el Backend (puede romper sacos)
+                stepYMin = '0.01';
+                nombre += ' <small class="text-primary">(Suelto)</small>';
+            }
             
             // Verificar si ya existe en el carrito
             document.querySelectorAll("#cuerpo-carrito tr").forEach(tr => {
@@ -269,9 +296,8 @@
                     const cantidadActual = parseFloat(inputCant.value);
                     
                     if (cantidadActual < stock) {
-                        // Aumentamos en 1 si es servicio, o dejamos escribir si es producto a granel
-                        inputCant.value = (cantidadActual + 1).toFixed(tipo === 'producto' ? 2 : 0);
-                    } else if (tipo === 'producto') {
+                        inputCant.value = (cantidadActual + 1).toFixed(valTipo === 'PRODUCTO_FRACCIONADO' ? 2 : 0);
+                    } else if (valTipo === 'PRODUCTO_ENTERO') {
                         alert("Has alcanzado el límite de stock de este producto.");
                     }
                     duplicado = true;
@@ -285,8 +311,6 @@
             
             // Crear nueva fila con nombres simples
             const tr = document.createElement("tr");
-            const labelTipo = tipo === 'producto' ? '<span class="badge bg-light text-dark border me-1">P</span>' : '<span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 me-1">S</span>';
-            const stepYMin = tipo === 'producto' ? '0.01' : '1';
 
             tr.innerHTML = `
                 <td>

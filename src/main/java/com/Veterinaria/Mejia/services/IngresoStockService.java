@@ -1,6 +1,7 @@
 package com.Veterinaria.Mejia.services;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -56,8 +57,30 @@ public class IngresoStockService {
                 Producto producto = productoRepository.findById(detalle.getProducto().getId())
                         .orElseThrow(() -> new RuntimeException("El producto seleccionado no existe en el catálogo."));
 
-                // Sumamos la cantidad ingresada al stock total que ya tenía el producto
-                producto.setStockTotal(producto.getStockTotal().add(detalle.getCantidad()));
+                // Lógica Pulida: Soporta ingresos con fracciones (Ej: Compras 1.5 Cajas)
+                if (producto.getPermiteFraccionamiento() != null && producto.getPermiteFraccionamiento()) {
+                    
+                    // Extraemos la parte entera y la decimal de forma matemática segura
+                    BigDecimal cantidadEnteraBD = detalle.getCantidad().setScale(0, RoundingMode.DOWN);
+                    int enteros = cantidadEnteraBD.intValue();
+                    BigDecimal decimales = detalle.getCantidad().subtract(cantidadEnteraBD);
+
+                    int stockCerradoActual = producto.getStockCerrado() != null ? producto.getStockCerrado() : 0;
+                    producto.setStockCerrado(stockCerradoActual + enteros); // Suma las cajas enteras
+                    
+                    if (decimales.compareTo(BigDecimal.ZERO) > 0) {
+                        // Convertimos la fracción (ej: 0.5 cajas) a sueltos (ej: 0.5 * 10 = 5 blisters)
+                        BigDecimal contenidoExtra = decimales.multiply(producto.getContenidoPorEnvase() != null ? producto.getContenidoPorEnvase() : BigDecimal.ZERO);
+                        producto.setStockAbierto(producto.getStockAbierto().add(contenidoExtra));
+                    }
+                } else {
+                    int cantidadEntera = detalle.getCantidad().intValue();
+                    if (detalle.getCantidad().compareTo(new BigDecimal(cantidadEntera)) != 0) {
+                        throw new IllegalArgumentException("La cantidad de ingreso para '" + producto.getNombre() + "' debe ser un número entero cerrado.");
+                    }
+                    int stockCerradoActual = producto.getStockCerrado() != null ? producto.getStockCerrado() : 0;
+                    producto.setStockCerrado(stockCerradoActual + cantidadEntera);
+                }
                 
                 // Guardamos el producto con su nuevo stock
                 productoRepository.save(producto);

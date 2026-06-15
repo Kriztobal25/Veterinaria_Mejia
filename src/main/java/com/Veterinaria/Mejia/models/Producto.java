@@ -50,7 +50,7 @@ public class Producto {
 
     // Tipo de unidad para fraccionar (sacos, botellas, etc.)
     @NotBlank(message = "El tipo de unidad es obligatorio")
-    @Pattern(regexp = "^(kg|unidad|litros)$", message = "La unidad solo puede ser: kg, unidad, litros")
+    @Pattern(regexp = "^(kg|unidad|blister|caja|litros)$", message = "La unidad debe ser válida (kg, unidad, caja, blister)")
     @Column(name = "tipo_unidad", nullable = false, length = 15)
     private String tipoUnidad;
 
@@ -80,6 +80,34 @@ public class Producto {
     @Column(name = "estado", nullable = false, columnDefinition = "TINYINT(1)")
     @Builder.Default
     private Boolean estado = true; 
+
+    // ==========================================
+    // ATRIBUTOS PARA FRACCIONAMIENTO / DOBLE STOCK
+    // ==========================================
+
+    @Column(name = "permite_fraccionamiento", columnDefinition = "TINYINT(1)")
+    @Builder.Default
+    private Boolean permiteFraccionamiento = false;
+
+    // Representa los sacos/envases sellados enteros
+    @Column(name = "stock_cerrado")
+    @Builder.Default
+    private Integer stockCerrado = 0;
+
+    // Representa los kilos/gramos sueltos disponibles para la venta
+    @Column(name = "stock_abierto", precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal stockAbierto = BigDecimal.ZERO;
+
+    // Cuántos kilos trae el saco original
+    @Column(name = "contenido_por_envase", precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal contenidoPorEnvase = BigDecimal.ZERO;
+
+    // Precio manual que el Administrador define para cobrar por kilo/gramo
+    @Column(name = "precio_por_fraccion", precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal precioPorFraccion = BigDecimal.ZERO;
 
     // Método transitorio para saber "cuánto se está invirtiendo" en total de este producto
     public BigDecimal calcularInversionTotal() {

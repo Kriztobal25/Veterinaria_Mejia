@@ -36,13 +36,13 @@
 
             <div class="card card-custom mb-4">
                 <div class="card-body p-4">
-                    <form th:action="@{/almacen/productos}" method="GET" class="row g-3 align-items-end">
+                    <form th:action="@{/almacen/productos}" method="GET" class="row g-3 align-items-end" onsubmit="return validarFiltros()">
                         
                         <div class="col-md-5">
                             <label class="form-label fw-600 text-secondary">
                                 <i class="bi bi-folder me-1"></i>Seleccionar Categoría:
                             </label>
-                            <select name="categoriaId" class="form-select" required>
+                            <select name="categoriaId" class="form-select">
                                 <option value="">-- Elija una Categoría --</option>
                                 <option th:each="cat : ${categorias}" 
                                         th:value="${cat.id}" 
@@ -55,7 +55,7 @@
                             <label class="form-label fw-600 text-secondary">
                                 <i class="bi bi-paw me-1"></i>Seleccionar Especie Destino:
                             </label>
-                            <select name="especieId" class="form-select" required>
+                            <select name="especieId" class="form-select">
                                 <option value="">-- Elija una Especie --</option>
                                 <option th:each="esp : ${especies}" 
                                         th:value="${esp.id}" 
@@ -76,19 +76,19 @@
             <div class="card card-custom">
                 <div class="card-body p-0">
                     
-                    <div th:if="${categoriaSeleccionadaId == null || especieSeleccionadaId == null}" class="text-center py-5 text-muted">
+                    <div th:if="${categoriaSeleccionadaId == null && especieSeleccionadaId == null}" class="text-center py-5 text-muted">
                         <i class="bi bi-info-circle d-block mb-3 text-secondary" style="font-size: 3rem;"></i>
                         <h5 class="fw-bold">Esperando Filtros</h5>
                         <p class="mb-0">Seleccione una Categoría y una Especie en el panel superior para cargar los productos.</p>
                     </div>
 
-                    <div th:if="${categoriaSeleccionadaId != null && especieSeleccionadaId != null && (productos == null || productos.empty)}" class="text-center py-5 text-danger">
+                    <div th:if="${(categoriaSeleccionadaId != null || especieSeleccionadaId != null) && (productos == null || productos.empty)}" class="text-center py-5 text-danger">
                         <i class="bi bi-exclamation-triangle d-block mb-3 text-danger opacity-75" style="font-size: 3rem;"></i>
                         <h5 class="fw-bold">Sin Resultados</h5>
                         <p class="mb-0">No existen productos registrados en el sistema para esta combinación exacta.</p>
                     </div>
 
-                    <div class="table-responsive" th:if="${categoriaSeleccionadaId != null && especieSeleccionadaId != null && productos != null && !productos.empty}">
+                    <div class="table-responsive" th:if="${(categoriaSeleccionadaId != null || especieSeleccionadaId != null) && productos != null && !productos.empty}">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
                                 <tr>
@@ -102,7 +102,7 @@
                             </thead>
                             <tbody>
                                 <tr th:each="p : ${productos}" 
-                                    th:classappend="${p.stockTotal <= p.stockMinimo} ? 'table-warning text-warning-emphasis' : ''">
+                                    th:classappend="${p.stockCerrado <= p.stockMinimo} ? 'table-warning text-warning-emphasis' : ''">
                                     
                                     <td class="ps-4 fw-bold text-dark">
                                         #<span th:text="${p.id}">1</span>
@@ -115,8 +115,16 @@
                                     </td>
                                     
                                     <td>
-                                        <strong th:text="${p.stockTotal} + ' unid.'">0.00</strong>
-                                        <span th:if="${p.stockTotal <= p.stockMinimo}" class="badge bg-danger ms-2" style="font-size: 11px;">
+                                        <!-- Si permite fraccionamiento (Doble Stock) -->
+                                        <div th:if="${p.permiteFraccionamiento != null and p.permiteFraccionamiento}">
+                                            <div class="fw-bold text-primary mb-1"><i class="bi bi-box-seam me-1"></i><span th:text="${p.stockCerrado != null ? p.stockCerrado : 0} + ' Enteros'"></span></div>
+                                            <div class="small text-muted"><i class="bi bi-basket me-1"></i><span th:text="${p.stockAbierto != null ? p.stockAbierto : 0} + ' Sueltos'"></span></div>
+                                        </div>
+                                        <!-- Si NO permite fraccionamiento (Stock Normal) -->
+                                        <div th:unless="${p.permiteFraccionamiento != null and p.permiteFraccionamiento}">
+                                            <strong th:text="${p.stockCerrado != null ? p.stockCerrado : 0} + ' ' + ${p.tipoUnidad}"></strong>
+                                        </div>
+                                        <span th:if="${p.stockCerrado <= p.stockMinimo}" class="badge bg-danger mt-1 d-inline-block" style="font-size: 11px;">
                                             <i class="bi bi-exclamation-circle-fill"></i> ¡Crítico!
                                         </span>
                                     </td>
@@ -209,6 +217,17 @@
                 });
             }
         });
+
+        function validarFiltros() {
+            const cat = document.querySelector('select[name="categoriaId"]').value;
+            const esp = document.querySelector('select[name="especieId"]').value;
+            
+            if (!cat && !esp) {
+                alert("Por favor, seleccione al menos una Categoría o una Especie para realizar la búsqueda.");
+                return false;
+            }
+            return true;
+        }
     </script>
 </body>
 </html>

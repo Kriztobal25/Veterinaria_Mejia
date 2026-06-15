@@ -57,8 +57,8 @@ public class ProductoController {
         model.addAttribute("categoriaSeleccionadaId", categoriaId);
         model.addAttribute("especieSeleccionadaId", especieId);
 
-        if (categoriaId != null && especieId != null) {
-            List<Producto> filtrados = productoRepository.buscarPorCategoriaYEspecieJPQL(categoriaId, especieId);
+        if (categoriaId != null || especieId != null) {
+            List<Producto> filtrados = productoRepository.findByCategoriaAndEspecieOptional(categoriaId, especieId);
             model.addAttribute("productos", filtrados);
         } else {
             model.addAttribute("productos", productoService.listarTodos());

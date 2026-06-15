@@ -25,7 +25,7 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
     Integer obtenerMaximoCorrelativoJPQL(@Param("serie") String serie);
 
     // JPQL: Historial de ventas de un cliente específico
-    @Query("SELECT v FROM Venta v WHERE v.clienteId = :clienteId ORDER BY v.fechaEmision DESC")
+    @Query("SELECT v FROM Venta v WHERE v.cliente.id = :clienteId ORDER BY v.fechaEmision DESC")
     List<Venta> buscarHistorialPorClienteJPQL(@Param("clienteId") Integer clienteId);
 
     // JPQL: Cuenta las ventas cuya fecha de emisión coincida con el día de hoy

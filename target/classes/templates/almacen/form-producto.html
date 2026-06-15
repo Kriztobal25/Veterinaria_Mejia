@@ -82,15 +82,15 @@
                                         <div class="d-flex gap-4">
                                             <div class="form-check">
                                                 <input class="form-check-input" type="radio" th:field="*{tipoUnidad}" value="unidad" id="um1" required>
-                                                <label class="form-check-label" for="um1">Por Unidad (Sacos, Latas, Cajas)</label>
+                                            <label class="form-check-label" for="um1">Entero (Sacos, Cajas, Botellas)</label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="radio" th:field="*{tipoUnidad}" value="kg" id="um2">
-                                                <label class="form-check-label" for="um2">A Granel (Kilos)</label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="radio" th:field="*{tipoUnidad}" value="litros" id="um3">
-                                                <label class="form-check-label" for="um3">Líquidos (Litros)</label>
+                                            <input class="form-check-input" type="radio" th:field="*{tipoUnidad}" value="kg" id="um2">
+                                            <label class="form-check-label" for="um2">A Granel (Kilos)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" th:field="*{tipoUnidad}" value="blister" id="um3">
+                                            <label class="form-check-label" for="um3">Medicinas (Blisters / Pastillas)</label>
                                             </div>
                                         </div>
                                     </div>
@@ -127,6 +127,29 @@
                                         <div class="form-text">Máximo ingreso inicial: 99</div>
                                     </div>
 
+                                    <div class="col-md-12 mt-4">
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="checkFraccionar" th:field="*{permiteFraccionamiento}">
+                                            <label class="form-check-label fw-bold text-primary" for="checkFraccionar">
+                                            Habilitar venta fraccionada (Kilos a granel / Blisters / Pastillas sueltas)
+                                            </label>
+                                        </div>
+
+                                        <div class="row g-3 p-4 bg-light rounded-3 border d-none" id="panelFraccionamiento">
+                                            <div class="col-md-4">
+                                            <label class="form-label small fw-bold">Stock Cerrado Inicial (Cajas/Sacos)</label>
+                                                <input type="number" class="form-control form-control-sm" th:field="*{stockCerrado}" placeholder="Ej: 5">
+                                            </div>
+                                            <div class="col-md-4">
+                                            <label class="form-label small fw-bold">Contenido por Envase (Kg/Blisters)</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" th:field="*{contenidoPorEnvase}" placeholder="Ej: 15.00">
+                                            </div>
+                                            <div class="col-md-4">
+                                            <label class="form-label small fw-bold text-success">Precio x Unidad Suelta (S/.)</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm border-success" th:field="*{precioPorFraccion}" placeholder="Precio de venta">
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <hr class="my-5 text-muted">
@@ -151,6 +174,7 @@
                             <ul class="text-muted small ps-3 mb-0" style="line-height: 1.8;">
                                 <li><strong>Inversión Total:</strong> El sistema calculará el valor de inversión total multiplicando el stock por su precio de compra.</li>
                                 <li>El límite máximo de ingreso por transacción es de 99.</li>
+                                <li>Para ventas a granel, el sistema abrirá un saco de <strong>Stock Cerrado</strong> automáticamente cuando se quede sin <strong>Stock Abierto</strong>.</li>
                                 <li>El sistema alertará automáticamente cuando el stock caiga por debajo de <strong>12 (Stock Mínimo fijo)</strong>.</li>
                                 <li>El producto nace como <strong>Activo</strong>.</li>
                             </ul>
@@ -164,5 +188,25 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const checkFraccionar = document.getElementById("checkFraccionar");
+            const panelFraccionamiento = document.getElementById("panelFraccionamiento");
+
+            function togglePanel() {
+                if (checkFraccionar.checked) {
+                    panelFraccionamiento.classList.remove("d-none");
+                } else {
+                    panelFraccionamiento.classList.add("d-none");
+                }
+            }
+
+            if(checkFraccionar) {
+                checkFraccionar.addEventListener("change", togglePanel);
+                togglePanel(); // Validar estado inicial al cargar o editar el producto
+            }
+        });
+    </script>
 </body>
 </html>

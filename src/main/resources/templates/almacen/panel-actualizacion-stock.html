@@ -89,7 +89,10 @@
                                 <div>
                                     <div class="fw-bold text-dark mb-1" th:text="${p.nombre}">Producto</div>
                                     <div class="text-muted" style="font-size: 11px;">
-                                        <i class="bi bi-box me-1"></i>Stock: <span th:text="${p.stockTotal}"></span> <span th:text="${p.tipoUnidad}"></span>
+                                        <i class="bi bi-box me-1"></i>Stock: <span th:text="${p.stockCerrado != null ? p.stockCerrado : 0}"></span> enteros
+                                        <span th:if="${p.permiteFraccionamiento != null and p.permiteFraccionamiento}" class="text-primary fw-bold ms-1">
+                                            (+ <span th:text="${p.stockAbierto != null ? p.stockAbierto : 0}"></span> sueltos)
+                                        </span>
                                     </div>
                                 </div>
                                 <div class="text-end" style="font-size: 12px;">

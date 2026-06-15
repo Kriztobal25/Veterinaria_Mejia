@@ -56,12 +56,25 @@
         /* Pie de página */
         .footer { margin-top: 20px; }
         
+        /* Botones de Acción (No Imprimibles) */
+        .acciones { text-align: center; margin-top: 20px; padding: 15px 0; font-family: sans-serif; }
+        .acciones button { padding: 8px 12px; margin: 0 5px; cursor: pointer; border: 1px solid #ccc; background: #f8f9fa; border-radius: 5px; font-weight: bold; font-size: 12px; }
+        .acciones button:hover { background: #e2e6ea; }
+        .btn-pdf { background: #dc3545 !important; color: white; border-color: #dc3545 !important; }
+        .btn-pdf:hover { background: #c82333 !important; }
+
         /* Ocultar márgenes del navegador al imprimir */
-        @media print { body { padding: 0; } }
+        @media print { 
+            body { padding: 0; } 
+            .no-print { display: none !important; }
+        }
     </style>
+    <!-- Librería html2pdf -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
+  <div id="ticket-content">
     <div class="header text-center">
         <h2>VETERINARIA MEJÍA</h2>
         <div class="info-local">
@@ -94,12 +107,17 @@
             <tr>
                 <td class="bold">CAJA / VEND.</td>
                 <td>:</td>
-                <td th:text="'CAJA 01 (ID:' + ${venta.usuarioId} + ')'"></td>
+                <td th:text="${#strings.toUpperCase(venta.usuario.nombreUsuario)} + ' (ID:' + ${venta.usuario.id} + ')'"></td>
             </tr>
             <tr>
                 <td class="bold">CLIENTE</td>
                 <td>:</td>
-                <td>PÚBLICO GENERAL</td>
+                <td>
+                    <span th:text="${venta.cliente != null ? #strings.toUpperCase(venta.cliente.nombre) : 'PÚBLICO GENERAL'}"></span>
+                    <th:block th:if="${venta.cliente != null}">
+                        <br><span style="font-size: 10px;" th:text="'DNI: ' + ${venta.cliente.dni}"></span>
+                    </th:block>
+                </td>
             </tr>
         </table>
     </div>
@@ -160,16 +178,34 @@
         <br>
         <span class="small" style="color: #666;">-- Sistema VetMejía POS --</span>
     </div>
+  </div> <!-- Fin del content a exportar a PDF -->
 
-    <script>
+    <!-- Panel de acciones -->
+    <div class="acciones no-print" data-html2canvas-ignore="true">
+        <button onclick="window.print()">🖨️ Imprimir</button>
+        <button class="btn-pdf" onclick="descargarPDF()">📄 Descargar PDF</button>
+        <button onclick="window.location.href='/ventas/nuevo'">Volver a Caja</button>
+    </div>
+
+    <script th:inline="javascript">
         window.onload = function() {
             // Lanza el cuadro de impresión
             window.print();
+        }
+
+        function descargarPDF() {
+            const elemento = document.getElementById('ticket-content');
+            const comprobanteName = /*[[${venta.serie} + '-' + ${#numbers.formatInteger(venta.correlativo, 6)}]]*/ 'Ticket';
             
-            // Regresa a la caja después de 1.5s
-            setTimeout(function() { 
-                window.location.href = "/ventas/nuevo"; 
-            }, 1500);
+            const opciones = {
+                margin:       0.1,
+                filename:     'VetMejia_' + comprobanteName + '.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: [3.15, 8], orientation: 'portrait' } // Formato adaptado al rollo 80mm
+            };
+            
+            html2pdf().set(opciones).from(elemento).save();
         }
     </script>
 </body>
