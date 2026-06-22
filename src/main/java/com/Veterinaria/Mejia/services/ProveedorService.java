@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +48,18 @@ public class ProveedorService {
     }
 
     @Transactional
+    public void modificarEstado(Integer id, boolean nuevoEstado) {
+        Proveedor proveedor = buscarPorId(id);
+        proveedor.setEstado(nuevoEstado);
+        proveedorRepository.save(proveedor);
+    }
+
+    @Transactional
     public void eliminar(Integer id) {
-        proveedorRepository.deleteById(id);
+        try {
+            proveedorRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new RuntimeException("No se puede eliminar el proveedor porque ya forma parte del historial de abastecimiento. Por favor, utilice la opción de dejar inactivo.");
+        }
     }
 }
