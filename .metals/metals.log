@@ -12329,3 +12329,62 @@ WARNING: Unmatched cancel notification for request id 19
 2026.06.21 19:42:52 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
 2026.06.21 19:43:05 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
 2026.06.21 19:43:53 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 19:44:39 INFO  Shutting down server
+2026.06.21 19:44:39 INFO  Memory monitor stopped
+2026.06.21 19:44:39 INFO  shutting down Metals
+2026.06.21 19:44:39 INFO  Exiting server
+2026.06.21 19:47:36 INFO  Started: Metals version 1.6.7+41-335bd931-SNAPSHOT in folders 'C:\Users\Antony\Documents\Proyecto_Mejia\Mejia' for client Visual Studio Code 1.124.2.
+2026.06.21 19:47:42 INFO  Memory monitor started
+2026.06.21 19:47:45 WARN  Using H2 2.4.240 which is newer than the version Flyway has been verified with. The latest verified version of H2 is 2.3.232.
+2026.06.21 20:34:30 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 20:34:35 WARN  no build target for: C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java
+jun. 21, 2026 8:34:35 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1
+2026.06.21 20:34:35 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 20:34:35 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+jun. 21, 2026 8:34:37 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3
+2026.06.21 20:34:37 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+jun. 21, 2026 8:34:38 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 4
+2026.06.21 20:34:38 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+jun. 21, 2026 8:34:38 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 7
+2026.06.21 20:34:37 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 20:34:40 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 20:46:16 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 20:57:53 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 20:58:01 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 20:58:05 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 20:58:16 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 20:58:27 WARN  no build target for: C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java
+2026.06.21 20:58:29 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 20:58:30 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 20:58:32 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 20:58:33 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+jun. 21, 2026 8:58:33 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 20
+2026.06.21 20:58:33 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 21:16:08 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 21:16:12 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 21:16:15 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+jun. 21, 2026 9:16:15 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 23
+jun. 21, 2026 9:16:15 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 24
+2026.06.21 21:16:15 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 21:16:18 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 21:17:45 WARN  no build target for: C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java
+2026.06.21 21:17:45 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 21:17:46 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 21:17:48 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 21:19:15 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 21:19:36 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 21:21:29 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 21:22:26 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\ProveedorService.java. Using fallback presentation compiler.
+2026.06.21 21:22:51 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\IngresoStockService.java. Using fallback presentation compiler.
+jun. 21, 2026 9:22:53 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 35
+2026.06.21 21:22:53 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\IngresoStockService.java. Using fallback presentation compiler.
+2026.06.21 21:24:01 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\IngresoStockService.java. Using fallback presentation compiler.
+2026.06.21 21:24:01 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\IngresoStockService.java. Using fallback presentation compiler.
