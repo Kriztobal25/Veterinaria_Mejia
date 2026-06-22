@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{fragments/head :: head('Dashboard IA - Veterinaria Mejía')}"></head>
+<body>
+<div th:replace="~{fragments/sidebar :: menuLateral}"></div>
+<div class="main-content">
+<header th:replace="~{fragments/navbar :: topbar}"></header>
+<main class="content">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="bi bi-robot text-primary me-2"></i>Dashboard Inteligencia Artificial</h2>
+            <p class="text-muted mb-0">Análisis heurístico en tiempo real del sistema veterinario.</p>
+        </div>
+        <div>
+            <a th:href="@{/ia/diagnostico}" class="btn btn-primary fw-600 shadow-sm">
+                <i class="bi bi-activity me-1"></i>Nuevo Diagnóstico IA
+            </a>
+        </div>
+    </div>
+
+    <!-- ALERTAS -->
+    <div th:if="${successMsg}" class="alert alert-success alert-dismissible fade show mb-4 border-0 shadow-sm">
+        <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- TARJETAS DE ESTADÍSTICAS -->
+    <div class="row g-4 mb-4">
+        <!-- Diagnósticos Realizados -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #3b82f6 !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small fw-bold text-uppercase">Diagnósticos IA</p>
+                            <h3 class="mb-0 fw-bold text-dark" th:text="${totalDiagnosticos ?: 0}">0</h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 text-primary rounded p-3">
+                            <i class="bi bi-clipboard2-pulse fs-3"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-muted small">
+                        <i class="bi bi-graph-up text-success"></i> Análisis heurísticos
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Casos Críticos -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #ef4444 !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small fw-bold text-uppercase">Casos Críticos</p>
+                            <h3 class="mb-0 fw-bold text-danger" th:text="${casosCriticos ?: 0}">0</h3>
+                        </div>
+                        <div class="bg-danger bg-opacity-10 text-danger rounded p-3">
+                            <i class="bi bi-exclamation-triangle fs-3"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-muted small">
+                        <i class="bi bi-heart-pulse"></i> Prioridad 8-10
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas de Vacunas -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #f59e0b !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small fw-bold text-uppercase">Vacunas Pendientes</p>
+                            <h3 class="mb-0 fw-bold text-warning" th:text="${vacunasPendientes ?: 0}">0</h3>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 text-warning rounded p-3">
+                            <i class="bi bi-shield-exclamation fs-3"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-muted small">
+                        <i class="bi bi-calendar-x"></i> Refuerzos vencidos
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock Bajo -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #8b5cf6 !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small fw-bold text-uppercase">Stock Crítico</p>
+                            <h3 class="mb-0 fw-bold text-purple" style="color: #8b5cf6;" th:text="${productosStockBajo ?: 0}">0</h3>
+                        </div>
+                        <div class="rounded p-3" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">
+                            <i class="bi bi-box-seam fs-3"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-muted small">
+                        <i class="bi bi-arrow-down-circle"></i> Bajo mínimo
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRÁFICOS Y TABLAS -->
+    <div class="row g-4">
+        <!-- Diagnósticos por Tipo -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-pie-chart-fill text-primary me-2"></i>Diagnósticos por Categoría
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="diagnosticosChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prioridad de Citas -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-list-task text-danger me-2"></i>Citas por Nivel de Prioridad
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="prioridadChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLAS DE ALERTAS -->
+    <div class="row g-4 mt-2">
+        <!-- Productos con Stock Bajo -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Alertas de Inventario
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Producto</th>
+                                    <th class="text-center">Stock Actual</th>
+                                    <th class="text-center">Mínimo</th>
+                                    <th class="text-end pe-3">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${productosStockBajoLista == null or #lists.isEmpty(productosStockBajoLista)}">
+                                    <td colspan="4" class="text-center py-4 text-muted">
+                                        <i class="bi bi-check-circle text-success"></i> Todo el inventario está en niveles óptimos
+                                    </td>
+                                </tr>
+                                <tr th:each="prod : ${productosStockBajoLista}">
+                                    <td class="ps-3 fw-500 text-dark" th:text="${prod.nombre}">Producto</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-danger" th:text="${prod.stockTotal}">0</span>
+                                    </td>
+                                    <td class="text-center text-muted" th:text="${prod.stockMinimo}">12</td>
+                                    <td class="text-end pe-3">
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-arrow-down-circle"></i> Reabastecer
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vacunas Pendientes -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-shield-check text-info me-2"></i>Próximos Refuerzos de Vacunas
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Paciente</th>
+                                    <th>Vacuna</th>
+                                    <th class="text-center">Fecha Refuerzo</th>
+                                    <th class="text-end pe-3">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${vacunasPendientesLista == null or #lists.isEmpty(vacunasPendientesLista)}">
+                                    <td colspan="4" class="text-center py-4 text-muted">
+                                        <i class="bi bi-check-circle text-success"></i> No hay vacunas pendientes
+                                    </td>
+                                </tr>
+                                <tr th:each="vac : ${vacunasPendientesLista}">
+                                    <td class="ps-3 fw-500 text-dark" th:text="${vac.paciente.nombre}">Paciente</td>
+                                    <td class="text-muted" th:text="${vac.nombreVacuna}">Vacuna</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info" th:text="${#temporals.format(vac.fechaProximoRefuerzo, 'dd/MM/yyyy')}">01/01/2026</span>
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-clock-history"></i> Pendiente
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script th:inline="javascript">
+// Datos para gráficos (enviados desde el controlador)
+const diagnosticosLabels = /*[[${diagnosticosLabels}]]*/ ['Parvovirus', 'Moquillo', 'Dermatitis'];
+const diagnosticosDatos = /*[[${diagnosticosDatos}]]*/ [5, 3, 2];
+
+const prioridadLabels = /*[[${prioridadLabels}]]*/ ['Crítico', 'Urgente', 'Normal', 'Leve'];
+const prioridadDatos = /*[[${prioridadDatos}]]*/ [2, 5, 10, 8];
+
+// Gráfico de Diagnósticos
+const ctxDiag = document.getElementById('diagnosticosChart').getContext('2d');
+new Chart(ctxDiag, {
+    type: 'doughnut',
+    data: {
+        labels: diagnosticosLabels,
+        datasets: [{
+            data: diagnosticosDatos,
+            backgroundColor: [
+                '#3b82f6',
+                '#10b981',
+                '#f59e0b',
+                '#ef4444',
+                '#8b5cf6'
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Gráfico de Prioridad
+const ctxPrio = document.getElementById('prioridadChart').getContext('2d');
+new Chart(ctxPrio, {
+    type: 'bar',
+    data: {
+        labels: prioridadLabels,
+        datasets: [{
+            label: 'Cantidad de Citas',
+            data: prioridadDatos,
+            backgroundColor: [
+                'rgba(239, 68, 68, 0.8)',
+                'rgba(245, 158, 11, 0.8)',
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(16, 185, 129, 0.8)'
+            ],
+            borderColor: [
+                '#ef4444',
+                '#f59e0b',
+                '#3b82f6',
+                '#10b981'
+            ],
+            borderWidth: 2,
+            borderRadius: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+</script>
+</body>
+</html>
