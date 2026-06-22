@@ -1,0 +1,29 @@
+# Maven
+target/
+
+# VS Code
+.vscode/
+
+# Metals
+.metals/
+
+# IntelliJ
+.idea/
+
+# Logs
+*.log
+
+# Temporales
+*.tmp
+*.temp
+
+# Variables de entorno
+.env
+
+# Java compilado
+*.class
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
