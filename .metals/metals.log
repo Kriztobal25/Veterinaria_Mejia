@@ -12388,3 +12388,7 @@ WARNING: Unmatched cancel notification for request id 35
 2026.06.21 21:22:53 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\IngresoStockService.java. Using fallback presentation compiler.
 2026.06.21 21:24:01 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\IngresoStockService.java. Using fallback presentation compiler.
 2026.06.21 21:24:01 INFO  no build target found for C:\Users\Antony\Documents\Proyecto_Mejia\Mejia\src\main\java\com\Veterinaria\Mejia\services\IngresoStockService.java. Using fallback presentation compiler.
+2026.06.22 09:04:42 INFO  Started: Metals version 1.6.7+41-335bd931-SNAPSHOT in folders 'C:\Users\Antony\Documents\Nueva carpeta (8)\Veterinaria_Mejia' for client Visual Studio Code 1.125.1.
+2026.06.22 09:04:43 INFO  time: initialize in 0.34s
+2026.06.22 09:04:42 INFO  Memory monitor started
+2026.06.22 09:04:52 WARN  Using H2 2.4.240 which is newer than the version Flyway has been verified with. The latest verified version of H2 is 2.3.232.

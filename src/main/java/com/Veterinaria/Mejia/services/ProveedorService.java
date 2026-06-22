@@ -4,10 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-<<<<<<< HEAD
 import org.springframework.dao.DataIntegrityViolationException;
-=======
->>>>>>> origin/feature/ia-heuristica
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,7 +48,7 @@ public class ProveedorService {
     }
 
     @Transactional
-<<<<<<< HEAD
+
     public void modificarEstado(Integer id, boolean nuevoEstado) {
         Proveedor proveedor = buscarPorId(id);
         proveedor.setEstado(nuevoEstado);
@@ -65,9 +62,5 @@ public class ProveedorService {
         } catch (DataIntegrityViolationException e) {
             throw new RuntimeException("No se puede eliminar el proveedor porque ya forma parte del historial de abastecimiento. Por favor, utilice la opción de dejar inactivo.");
         }
-=======
-    public void eliminar(Integer id) {
-        proveedorRepository.deleteById(id);
->>>>>>> origin/feature/ia-heuristica
     }
 }

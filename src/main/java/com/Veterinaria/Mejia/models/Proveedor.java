@@ -51,4 +51,7 @@ public class Proveedor {
     @Size(max = 100, message = "El nombre del contacto no debe superar los 100 caracteres")
     @Column(nullable = false, length = 100)
     private String contacto;
+
+    @Column(name = "estado", columnDefinition = "TINYINT(1) DEFAULT 1")
+    private Boolean estado;
 }

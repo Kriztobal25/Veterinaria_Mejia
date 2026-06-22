@@ -147,7 +147,6 @@
         }
         </style>
 
-    <!-- Botón de Hamburguesa -->
     <button id="sidebarToggleBtn" class="btn-toggle-sidebar" aria-label="Alternar Menú" data-bs-toggle="tooltip" data-bs-placement="right" title="Ocultar Menú">
         <i class="bi bi-list fs-4"></i>
     </button>
@@ -165,6 +164,38 @@
             </li>
 
             <li>
+                <a th:href="@{/ia}">
+                    <i class="bi bi-robot text-info"></i><span>Asistente IA</span>
+                </a>
+            </li>
+
+            <li>
+                <a class="d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#menuCitas" role="button" aria-expanded="false">
+                    <span><i class="bi bi-calendar-event"></i> Gestión de Citas</span>
+                    <i class="bi bi-chevron-down small text-white-50"></i>
+                </a>
+                <div class="collapse" id="menuCitas">
+                    <ul class="submenu-list">
+                        <li><a th:href="@{/citas}">Lista de Citas</a></li>
+                        <li><a th:href="@{/citas/nuevo}">Programar Cita</a></li>
+                    </ul>
+                </div>
+            </li>
+
+            <li>
+                <a class="d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#menuPacientes" role="button" aria-expanded="false">
+                    <span><i class="bi bi-clipboard2-pulse"></i> Pacientes</span>
+                    <i class="bi bi-chevron-down small text-white-50"></i>
+                </a>
+                <div class="collapse" id="menuPacientes">
+                    <ul class="submenu-list">
+                        <li><a th:href="@{/pacientes}">Lista de Pacientes</a></li>
+                        <li><a th:href="@{/pacientes/nuevo}">Registrar Paciente</a></li>
+                    </ul>
+                </div>
+            </li>
+
+            <li>
                 <a class="d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#menuVentas" role="button" aria-expanded="false">
                     <span><i class="bi bi-calculator"></i> Ventas y Caja</span>
                     <i class="bi bi-chevron-down small text-white-50"></i>
@@ -177,7 +208,6 @@
                 </div>
             </li>
 
-            <!-- Menú de Almacén (con restricciones) -->
             <li sec:authorize="hasAnyAuthority('ROLE_Administrador', 'ROLE_Empleado')">
                 <a class="d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#menuAlmacen" role="button" aria-expanded="false">
                     <span><i class="bi bi-box-seam"></i> Almacén e Inventario</span>
@@ -185,19 +215,17 @@
                 </a>
                 <div class="collapse" id="menuAlmacen">
                     <ul class="submenu-list">
-                        <!-- Catálogo visible para ambos roles -->
                         <li><a th:href="@{/almacen/productos}">Catálogo de Productos</a></li>
-                        <!-- Opciones solo para Administrador -->
                         <th:block sec:authorize="hasAuthority('ROLE_Administrador')">
                             <li><a th:href="@{/almacen/proveedores}">Lista de Proveedores</a></li>
                             <li><a th:href="@{/almacen/ingresos/nuevo}">Ingresar Mercadería</a></li>
                             <li><a th:href="@{/almacen/ingresos}">Historial de Ingresos</a></li>
+                            <li><a th:href="@{/almacen/stock}">Actualizar Stock</a></li>
                         </th:block>
                     </ul>
                 </div>
             </li>
 
-            <!-- Menús exclusivos para Administrador -->
             <th:block sec:authorize="hasAuthority('ROLE_Administrador')">
                 <li>
                     <a class="d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#menuMantenimiento" role="button" aria-expanded="false">
